@@ -1,0 +1,57 @@
+<div class="auth-container">
+  <div class="glass-card auth-card">
+    <div class="auth-header text-center">
+      <div class="auth-icon">
+        <i class="fa-solid fa-right-to-bracket text-primary"></i>
+      </div>
+      <h2>تسجيل الدخول</h2>
+      <p>مرحباً بعودتك! ادخل حسابك لمتابعة استكشاف المواهب</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          required 
+          placeholder="example@domain.com"
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">كلمة المرور</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          required 
+          placeholder="••••••••"
+          class="form-control"
+        />
+      </div>
+
+      <button type="submit" [disabled]="isLoading" class="btn btn-primary btn-lg w-100">
+        @if (isLoading) {
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري الدخول...
+        } @else {
+          <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer text-center">
+      <p>ليس لديك حساب بعد؟ <a routerLink="/register" class="text-primary font-weight-bold">إنشاء حساب جديد</a></p>
+    </div>
+  </div>
+</div>

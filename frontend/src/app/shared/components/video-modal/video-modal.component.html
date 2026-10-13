@@ -1,0 +1,81 @@
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-circle-play text-primary"></i>
+          <span>فيديوهات مهارات اللاعب: <strong>{{ playerName }}</strong></span>
+        </div>
+        <button (click)="closeModal()" class="btn-close" title="إغلاق">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Video Playlist Selector Tabs if multiple videos exist -->
+      @if (activeVideoList && activeVideoList.length > 1) {
+        <div class="video-playlist-tabs p-2 d-flex gap-2 bg-dark flex-wrap">
+          @for (vid of activeVideoList; track $index) {
+            <button 
+              type="button" 
+              (click)="selectVideo($index)" 
+              [class.btn-primary]="selectedIndex === $index"
+              [class.btn-outline]="$index !== selectedIndex"
+              class="btn btn-xs flex-grow-1"
+            >
+              <i class="fa-solid fa-film"></i> فيديو {{ $index + 1 }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="modal-body">
+        @if (activeVideoList.length > 0 && (isDirectVideo || safeEmbedUrl)) {
+          <div class="platform-watermark-overlay">
+            <i class="fa-solid fa-shield-halved text-gold"></i>
+            <span>عرض منصة المواهب</span>
+          </div>
+        }
+
+        @if (activeVideoList.length === 0) {
+
+          <div class="no-video py-5 text-center">
+            <i class="fa-solid fa-video-slash text-gold fa-3x mb-3"></i>
+            <h3 class="text-light fs-5">لم يتم إضافة فيديوهات مهارات بعد</h3>
+            <p class="text-muted small">لم يقم اللاعب <strong>{{ playerName }}</strong> برفع أو إضافة أي رابط فيديو لمهاراته حتى الآن.</p>
+          </div>
+        } @else if (isDirectVideo) {
+          <video [src]="currentRawUrl" controls autoplay controlsList="nodownload" class="video-element"></video>
+        } @else if (safeEmbedUrl) {
+          <iframe [src]="safeEmbedUrl" 
+                  frameborder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowfullscreen 
+                  class="iframe-element">
+          </iframe>
+          <!-- Cover YouTube/external platform branding -->
+          <div class="brand-blocker-top-left"></div>
+          <div class="brand-blocker-bottom-left"></div>
+        } @else {
+          <div class="no-video py-5 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-gold fa-3x mb-3"></i>
+            <p class="text-light fs-5 mb-2">يتعذر تشغيل هذا المقطع مباشرة داخل النافذة.</p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer d-flex justify-content-between align-items-center p-2 px-3 bg-dark border-top border-secondary">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge badge-player">
+            <i class="fa-solid fa-shield-halved text-gold me-1"></i> المشغل الحصري للمنصة
+          </span>
+          <span class="text-muted small">عرض مهارات اللاعب بدون روابط خارجية</span>
+        </div>
+        @if (isDirectVideo && currentRawUrl) {
+          <a [href]="currentRawUrl" download class="btn btn-primary btn-xs">
+            <i class="fa-solid fa-download"></i> تحميل مقطع الفيديو
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+}

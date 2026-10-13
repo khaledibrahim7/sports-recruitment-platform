@@ -1,0 +1,252 @@
+<div class="home-wrapper">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container hero-container">
+      <div class="hero-content text-center">
+        @if (isLoggedIn()) {
+          @if (userRole() === 'PLAYER') {
+            <div class="hero-tag">
+              <i class="fa-solid fa-id-card text-gold"></i>
+              <span>السجل الفني والبدني للاعب: <strong>{{ userDisplayName() }}</strong></span>
+            </div>
+            <h1 class="hero-title">
+              إدارة السيرة الكروية <span class="highlight">والمقاطع التحليلية</span>
+            </h1>
+            <p class="hero-subtitle">
+              تحديث المؤشرات البدنية، إضافة المقاطع المهارية والتكتيكية، ومتابعة دعوات المعايشة الواردة من الأندية والأكاديميات.
+            </p>
+            <div class="hero-actions justify-content-center">
+              <a routerLink="/profile" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-sliders"></i> إدارة الملف الشخصي
+              </a>
+              <a routerLink="/players" class="btn btn-outline btn-lg">
+                <i class="fa-solid fa-users"></i> دليل اللاعبين
+              </a>
+            </div>
+          } @else if (userRole() === 'ACADEMY') {
+            <div class="hero-tag">
+              <i class="fa-solid fa-graduation-cap text-gold"></i>
+              <span>لوحة الأكاديمية: <strong>{{ userDisplayName() }}</strong></span>
+            </div>
+            <h1 class="hero-title">
+              استكشاف وتقييم <span class="highlight">العناصر الواعدة</span>
+            </h1>
+            <p class="hero-subtitle">
+              تصفح السجلات الفنية للاعبين الشبان، معاينة الأداء الراداري، وتنسيق فترات الاختبار والمعايشة الميدانية.
+            </p>
+            <div class="hero-actions justify-content-center">
+              <a routerLink="/players" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-users"></i> دليل اللاعبين
+              </a>
+              <a routerLink="/profile" class="btn btn-outline btn-lg">
+                <i class="fa-solid fa-id-card"></i> السجل الرسمي
+              </a>
+            </div>
+          } @else if (userRole() === 'CLUB') {
+            <div class="hero-tag">
+              <i class="fa-solid fa-shield-halved text-gold"></i>
+              <span>منظومة التكشيف الفني: <strong>{{ userDisplayName() }}</strong></span>
+            </div>
+            <h1 class="hero-title">
+              منظومة التكشيف <span class="highlight">والتقييم الميداني</span>
+            </h1>
+            <p class="hero-subtitle">
+              تصفية العناصر حسب المراكز الأساسية والثانوية، تحليل مؤشرات الأداء، وإرسال طلبات المعايشة الرسمية.
+            </p>
+            <div class="hero-actions justify-content-center">
+              <a routerLink="/players" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-users"></i> دليل اللاعبين
+              </a>
+              <a routerLink="/profile" class="btn btn-outline btn-lg">
+                <i class="fa-solid fa-shield"></i> ملف النادي
+              </a>
+            </div>
+          }
+        } @else {
+          <div class="hero-tag">
+            <i class="fa-solid fa-shield-halved text-gold"></i>
+            <span>المنظومة الرقمية لتكشيف واستكشاف المواهب الرياضية</span>
+          </div>
+          <h1 class="hero-title">
+            الربط المباشر بين <span class="highlight">اللاعبين والأكاديميات والأندية</span>
+          </h1>
+          <p class="hero-subtitle">
+            منصة تقنية متخصصة في توثيق السجلات البدنية والفنية للاعبين وتسهيل عمليات التكشيف الفني وفق أعلى المعايير.
+          </p>
+          <div class="hero-actions justify-content-center">
+            <a routerLink="/register" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-user-plus"></i> إنشاء حساب جديد
+            </a>
+            <a routerLink="/players" class="btn btn-outline btn-lg">
+              <i class="fa-solid fa-users"></i> دليل اللاعبين
+            </a>
+          </div>
+        }
+
+        <!-- Dynamic Real Statistics Bar -->
+        <div class="hero-stats-wrapper mt-4">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-players">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div class="stat-content">
+                <span class="number">{{ featuredPlayers.length }}</span>
+                <span class="label">لاعب مسجل</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-academies">
+                <i class="fa-solid fa-graduation-cap"></i>
+              </div>
+              <div class="stat-content">
+                <span class="number">{{ featuredAcademies.length }}</span>
+                <span class="label">أكاديمية معتمدة</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-clubs">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="stat-content">
+                <span class="number">{{ featuredClubs.length }}</span>
+                <span class="label">نادي رياضي</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-scouting">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <div class="stat-content">
+                <span class="number">{{ totalScoutingOperationsCount }}</span>
+                <span class="label">عملية تكشيف وتحليل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modern Bento Box Grid Section -->
+  <section class="bento-section section-padding">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2>منظومة التكشيف والاستكشاف الرياضي</h2>
+        <p>بنية رقمية متكاملة لربط كافة أطراف المنظومة الرياضية</p>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Bento Tile 1: Scouting Database (Large 2-column span) -->
+        <div class="glass-card bento-tile bento-tile-large">
+          <div class="tile-badge"><i class="fa-solid fa-magnifying-glass text-primary"></i> تصفية متقدمة</div>
+          <h3>دليل اللاعبين والتحليل الفني</h3>
+          <p>تتيح لك المنظومة تصفية العناصر حسب المراكز الأساسية والثانوية مع التحليل الراداري للقدرات وتصفح المقاطع التحليلية المباشرة.</p>
+          <div class="tile-preview-tags">
+            <span class="tag-pill"><i class="fa-solid fa-check text-primary"></i> البحث بالمراكز</span>
+            <span class="tag-pill"><i class="fa-solid fa-check text-primary"></i> رادار القدرات البدنية</span>
+            <span class="tag-pill"><i class="fa-solid fa-check text-primary"></i> مقاطع الفيديو HD</span>
+          </div>
+          <a routerLink="/players" class="btn btn-primary btn-sm mt-3">
+            <i class="fa-solid fa-users"></i> دليل اللاعبين
+          </a>
+        </div>
+
+        <!-- Bento Tile 2: Trial Offers Engine -->
+        <div class="glass-card bento-tile">
+          <div class="tile-badge"><i class="fa-solid fa-paper-plane text-secondary"></i> المعايشة الميدانية</div>
+          <h3>طلبات المعايشة الرسمية</h3>
+          <p>إرسال ومتابعة طلبات الاختبارات الميدانية بين الأندية واللاعبين بنظام إشعارات فوري ومباشر.</p>
+          <a routerLink="/players" class="btn btn-outline btn-sm mt-3">
+            <i class="fa-solid fa-paper-plane"></i> إرسال طلب معايشة
+          </a>
+        </div>
+
+        <!-- Bento Tile 3: Scouts Watchlist -->
+        <div class="glass-card bento-tile">
+          <div class="tile-badge"><i class="fa-solid fa-bookmark text-gold"></i> المتابعة الفنية</div>
+          <h3>قائمة متابعة الكشافين</h3>
+          <p>حفظ العناصر المتميزة في قائمة متابعة خاصة بمسؤولي الأندية والأكاديميات لمتابعة تطورهم.</p>
+          <a routerLink="/profile" class="btn btn-outline btn-sm mt-3">
+            <i class="fa-solid fa-bookmark"></i> قائمة المتابعة
+          </a>
+        </div>
+
+        <!-- Bento Tile 4: Institutions Network (Large 2-column span) -->
+        <div class="glass-card bento-tile bento-tile-large">
+          <div class="tile-badge"><i class="fa-solid fa-building-columns text-gold"></i> الشبكة الرياضية</div>
+          <h3>دليل الأكاديميات والأندية المعتمدة</h3>
+          <p>ربط الأكاديميات التدريبية بالأندية الرياضية الرسمية لتسهيل عمليات الانتقال والاستقطاب.</p>
+          <div class="tile-preview-tags">
+            <span class="tag-pill"><i class="fa-solid fa-check text-gold"></i> أكاديميات تدريب معتمدة</span>
+            <span class="tag-pill"><i class="fa-solid fa-check text-gold"></i> أندية رياضية رسمية</span>
+          </div>
+          <a routerLink="/academies" class="btn btn-outline btn-sm mt-3">
+            <i class="fa-solid fa-building-columns"></i> تصفح المؤسسات
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Registered Players Showcase -->
+  @if (featuredPlayers.length > 0) {
+    <section class="players-showcase section-padding bg-alt">
+      <div class="container">
+        <div class="section-header flex-between">
+          <div>
+            <h2>أحدث العناصر المضافة</h2>
+            <p>تصفح السجلات الفنية المضافة حديثاً لفرق التكشيف</p>
+          </div>
+          <a routerLink="/players" class="btn btn-outline">
+            عرض كافة العناصر <i class="fa-solid fa-arrow-left"></i>
+          </a>
+        </div>
+
+        <div class="cards-grid">
+          @for (player of featuredPlayers; track player.id) {
+            <div class="glass-card player-card">
+              <div class="card-badge">
+                <span class="badge badge-player">
+                  {{ playerPositionLabels[player.position].ar || player.position }}
+                </span>
+              </div>
+              <div class="player-avatar">
+                <img 
+                  [src]="player.avatarUrl && player.avatarUrl.trim() !== '' ? player.avatarUrl : '/default-avatar.png'" 
+                  (error)="$any($event.target).src='/default-avatar.png'" 
+                  [alt]="player.fullName" 
+                  class="player-avatar-img"
+                />
+              </div>
+              <h3 class="player-name">{{ player.fullName }}</h3>
+              <div class="player-meta">
+                <span><i class="fa-solid fa-calendar-days"></i> العمر: {{ player.age }} سنة</span>
+              </div>
+              <p class="player-bio">{{ player.bio || 'سجل بدني وفني مسجل حديثاً في منصة التكشيف.' }}</p>
+
+              <div class="card-footer">
+                <button (click)="openVideo(player)" class="btn btn-primary btn-sm w-100">
+                  <i class="fa-solid fa-play"></i> المقاطع التحليلية
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>
+
+<!-- Video Player Modal -->
+<app-video-modal
+  [isOpen]="isVideoModalOpen"
+  [videoUrl]="selectedVideoUrl"
+  [videoUrls]="selectedVideoUrls"
+  [playerName]="selectedPlayerName"
+  (close)="closeVideoModal()"
+></app-video-modal>

@@ -1,0 +1,461 @@
+<div class="page-container section-padding">
+  <div class="container max-w-900">
+    <div class="glass-card profile-card">
+      <div class="profile-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="user-avatar">
+            <i class="fa-solid fa-user-gear"></i>
+          </div>
+          <div>
+            <h2>لوحة التحكم والخدمات الرياضية</h2>
+            <p class="text-muted m-0">البريد: <strong>{{ currentUser()?.email }}</strong></p>
+          </div>
+        </div>
+
+        <!-- Dashboard Navigation Tabs -->
+        <div class="nav-pills d-flex gap-2">
+          <button 
+            (click)="setTab('EDIT')" 
+            class="btn btn-sm" 
+            [class.btn-primary]="activeTab === 'EDIT'" 
+            [class.btn-outline]="activeTab !== 'EDIT'"
+          >
+            <i class="fa-solid fa-pen-to-square"></i> تعديل البروفايل
+          </button>
+          
+          <button 
+            (click)="setTab('OFFERS')" 
+            class="btn btn-sm" 
+            [class.btn-primary]="activeTab === 'OFFERS'" 
+            [class.btn-outline]="activeTab !== 'OFFERS'"
+          >
+            <i class="fa-solid fa-paper-plane"></i> طلبات المعايشة
+          </button>
+
+          @if (userRole() === 'ACADEMY' || userRole() === 'CLUB') {
+            <button 
+              (click)="setTab('WATCHLIST')" 
+              class="btn btn-sm" 
+              [class.btn-primary]="activeTab === 'WATCHLIST'" 
+              [class.btn-outline]="activeTab !== 'WATCHLIST'"
+            >
+              <i class="fa-solid fa-bookmark text-gold"></i> قائمة المتابعة
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (successMessage) {
+        <div class="alert alert-success mt-3">
+          <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="alert alert-danger mt-3">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+        </div>
+      }
+
+      @if (isLoading) {
+        <div class="py-5 text-center">
+          <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+          <p class="mt-2 text-muted">جاري تحميل بيانات الحساب...</p>
+        </div>
+      } @else {
+        <!-- TAB 1: PROFILE EDIT -->
+        @if (activeTab === 'EDIT') {
+          <form (ngSubmit)="saveProfile()" class="mt-4">
+            <!-- Player Profile Form -->
+            @if (userRole() === 'PLAYER') {
+              <div class="form-group">
+                <label>الاسم بالكامل *</label>
+                <input type="text" [(ngModel)]="playerForm.fullName" name="fullName" required class="form-control" />
+              </div>
+
+              <div class="grid-3">
+                <div class="form-group">
+                  <label>السن (سنوات) *</label>
+                  <input type="number" [(ngModel)]="playerForm.age" name="age" required class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>الطول (سم)</label>
+                  <input type="number" [(ngModel)]="playerForm.heightCm" name="heightCm" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>الوزن (كجم)</label>
+                  <input type="number" [(ngModel)]="playerForm.weightKg" name="weightKg" class="form-control" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>المركز الرئيسي في الملعب *</label>
+                  <select [(ngModel)]="playerForm.position" name="position" class="form-select">
+                    @for (pos of playerPositions; track pos) {
+                      <option [value]="pos">{{ playerPositionLabels[pos].ar }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>القدم المفضلة</label>
+                  <select [(ngModel)]="playerForm.preferredFoot" name="preferredFoot" class="form-select">
+                    <option value="RIGHT">القدم اليمنى</option>
+                    <option value="LEFT">القدم اليسرى</option>
+                    <option value="BOTH">كليتاهما</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Secondary Positions Selector -->
+              <div class="form-group mt-3">
+                <label><i class="fa-solid fa-layer-group text-primary"></i> المراكز الثانوية / البديلة (يمكنك اختيار مركز أو أكثر)</label>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  @for (pos of playerPositions; track pos) {
+                    @if (pos !== playerForm.position) {
+                      <button 
+                        type="button" 
+                        (click)="toggleSecondaryPosition(pos)" 
+                        class="btn-pos-pill"
+                        [class.active]="isSecondaryPositionSelected(pos)"
+                      >
+                        <i [class]="isSecondaryPositionSelected(pos) ? 'fa-solid fa-check text-gold' : 'fa-solid fa-plus text-muted'"></i>
+                        {{ playerPositionLabels[pos].ar }}
+                      </button>
+                    }
+                  }
+                </div>
+                <small class="text-muted mt-1 d-block">
+                  اختيارك للمراكز الثانوية يساعد الكشافين والأندية في العثور عليك عند البحث عن تلك المراكز أيضاً.
+                </small>
+              </div>
+
+              <!-- Avatar Field with Live Preview -->
+              <div class="form-group mt-3">
+                <label><i class="fa-solid fa-image text-primary"></i> رابط صورة البروفايل الشخصية (اختياري)</label>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-preview-box">
+                    <img 
+                      [src]="playerForm.avatarUrl && playerForm.avatarUrl.trim() !== '' ? playerForm.avatarUrl : '/default-avatar.png'" 
+                      (error)="$any($event.target).src='/default-avatar.png'" 
+                      alt="صورة الملف الشخصي" 
+                      class="avatar-preview-img"
+                    />
+                  </div>
+                  <div class="flex-grow-1">
+                    <input 
+                      type="url" 
+                      [(ngModel)]="playerForm.avatarUrl" 
+                      name="avatarUrl" 
+                      placeholder="ضع رابط صورة شخصية (أو اتركها فارغة للاعتماد على الصورة الافتراضية)..." 
+                      class="form-control"
+                    />
+                    <small class="text-muted mt-1 d-block">
+                      إذا تركت الحقل فارغاً، سيتم إظهار الصورة الافتراضية الرسمية للمنصة تلقائياً.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Radar Skills Sliders & Interactive Visualization -->
+              <div class="form-group mt-4 p-3 glass-card border border-emerald">
+                <h4 class="mb-3 text-emerald"><i class="fa-solid fa-chart-pie"></i> تقييمات المهارات والمؤشرات البدنية (Radar Skills)</h4>
+                
+                <div class="row align-items-center">
+                  <div class="col-md-7">
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>السرعة (Pace):</span>
+                        <span class="text-emerald">{{ playerForm.pace }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.pace" name="pace" class="form-range w-100" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>التسديد (Shooting):</span>
+                        <span class="text-emerald">{{ playerForm.shooting }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.shooting" name="shooting" class="form-range w-100" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>التمرير (Passing):</span>
+                        <span class="text-emerald">{{ playerForm.passing }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.passing" name="passing" class="form-range w-100" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>المراوغة (Dribbling):</span>
+                        <span class="text-emerald">{{ playerForm.dribbling }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.dribbling" name="dribbling" class="form-range w-100" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>الدفاع (Defending):</span>
+                        <span class="text-emerald">{{ playerForm.defending }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.defending" name="defending" class="form-range w-100" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <div class="d-flex justify-content-between text-xs font-bold mb-1">
+                        <span>القوة البدنية (Physicality):</span>
+                        <span class="text-emerald">{{ playerForm.physicality }}</span>
+                      </div>
+                      <input type="range" min="10" max="99" [(ngModel)]="playerForm.physicality" name="physicality" class="form-range w-100" />
+                    </div>
+                  </div>
+
+                  <div class="col-md-5 text-center mt-3 mt-md-0">
+                    <app-radar-chart
+                      [pace]="playerForm.pace"
+                      [shooting]="playerForm.shooting"
+                      [passing]="playerForm.passing"
+                      [dribbling]="playerForm.dribbling"
+                      [defending]="playerForm.defending"
+                      [physicality]="playerForm.physicality"
+                    ></app-radar-chart>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi Video Gallery Manager -->
+              <div class="form-group mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="mb-0">
+                    <i class="fa-solid fa-film text-primary"></i> معرض فيديوهات الـ CV والمهارات
+                  </label>
+                  <span class="badge" [class.badge-player]="playerForm.videoUrls.length < 3" [class.bg-gold]="playerForm.videoUrls.length >= 3">
+                    {{ playerForm.videoUrls.length }} / 3 فيديوهات
+                  </span>
+                </div>
+                
+                @if (playerForm.videoUrls.length < 3) {
+                  <div class="d-flex gap-2 mb-3">
+                    <input 
+                      type="url" 
+                      [(ngModel)]="newVideoUrl" 
+                      name="newVideoUrl" 
+                      placeholder="ضع رابط فيديو جديد (YouTube / Vimeo / Direct)..." 
+                      class="form-control"
+                    />
+                    <button 
+                      type="button" 
+                      (click)="addVideoUrl()" 
+                      class="btn btn-primary btn-sm whitespace-nowrap"
+                    >
+                      <i class="fa-solid fa-plus"></i> إضافة فيديو
+                    </button>
+                  </div>
+                } @else {
+                  <div class="alert alert-info py-2 px-3 mb-3 text-sm d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-gold"></i>
+                    <span>وصلت للحد الأقصى (3/3 فيديوهات). لحذف أو استبدال فيديو، استخدم خيار الحذف بالأسفل.</span>
+                  </div>
+                }
+
+                @if (playerForm.videoUrls && playerForm.videoUrls.length > 0) {
+                  <div class="video-playlist-list mt-3">
+                    @for (vid of playerForm.videoUrls; track $index) {
+                      <div class="video-playlist-item glass-card p-3 mb-2 d-flex justify-content-between align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden flex-grow-1">
+                          <span class="badge badge-player flex-shrink-0">
+                            <i class="fa-solid fa-play"></i> فيديو {{ $index + 1 }}
+                          </span>
+                          <span class="video-url-text text-truncate font-mono text-sm text-muted dir-ltr">
+                            {{ vid }}
+                          </span>
+                        </div>
+                        <button 
+                          type="button" 
+                          (click)="removeVideoUrl($index)" 
+                          class="btn btn-outline-danger btn-xs flex-shrink-0"
+                          title="حذف هذا الفيديو"
+                        >
+                          <i class="fa-solid fa-trash-can"></i> حذف
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="form-group mt-3">
+                <label>رقم الهاتف للتواصل</label>
+                <input type="text" [(ngModel)]="playerForm.phone" name="phone" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>نبذة رياضية ومسيرة سابقة</label>
+                <textarea [(ngModel)]="playerForm.bio" name="bio" class="form-control"></textarea>
+              </div>
+            }
+
+            <!-- Academy Profile Form -->
+            @if (userRole() === 'ACADEMY') {
+              <div class="form-group">
+                <label>اسم الأكاديمية *</label>
+                <input type="text" [(ngModel)]="academyForm.academyName" name="academyName" required class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>رابط صفحة الأكاديمية الرسمية *</label>
+                <input type="url" [(ngModel)]="academyForm.websiteOrPageUrl" name="websiteOrPageUrl" required class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>رابط اللوجو / الشعار</label>
+                <input type="url" [(ngModel)]="academyForm.logoUrl" name="logoUrl" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>وصف عن الأكاديمية</label>
+                <textarea [(ngModel)]="academyForm.description" name="description" class="form-control"></textarea>
+              </div>
+            }
+
+            <!-- Club Profile Form -->
+            @if (userRole() === 'CLUB') {
+              <div class="form-group">
+                <label>اسم النادي *</label>
+                <input type="text" [(ngModel)]="clubForm.clubName" name="clubName" required class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>رابط اللوجو / الشعار الرسمي للنادي *</label>
+                <input type="url" [(ngModel)]="clubForm.logoUrl" name="logoUrl" required class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>المدينة / الدولة</label>
+                <input type="text" [(ngModel)]="clubForm.cityCountry" name="cityCountry" class="form-control" />
+              </div>
+            }
+
+            <button type="submit" [disabled]="isSaving" class="btn btn-primary btn-lg w-100 mt-4">
+              @if (isSaving) {
+                <i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
+              }
+            </button>
+          </form>
+        }
+
+        <!-- TAB 2: TRIAL OFFERS -->
+        @if (activeTab === 'OFFERS') {
+          <div class="mt-4">
+            <h3 class="mb-3 text-gold">
+              <i class="fa-solid fa-paper-plane"></i> 
+              {{ userRole() === 'PLAYER' ? 'طلبات المعايشة والاختبار الموجهة إليك' : 'طلبات المعايشة المنشورة للاعبين' }}
+            </h3>
+
+            @if (userRole() === 'PLAYER') {
+              @if (myOffers.length === 0) {
+                <div class="text-center py-5 text-muted glass-card">
+                  <i class="fa-solid fa-envelope-open-text fa-3x mb-2 opacity-50"></i>
+                  <p>لم تتلقَ أي طلبات معايشة حتى الآن. تأكد من تحديث بروفايلك وفيديوهاتك لزيادة فرصة اكتشافك!</p>
+                </div>
+              } @else {
+                <div class="offers-grid">
+                  @for (offer of myOffers; track offer.id) {
+                    <div class="glass-card p-3 mb-3 border-emerald">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge" [class.badge-academy]="offer.scoutRole === 'ACADEMY'" [class.badge-club]="offer.scoutRole === 'CLUB'">
+                          <i class="fa-solid fa-building"></i> {{ offer.scoutName }} ({{ offer.scoutRole === 'ACADEMY' ? 'أكاديمية' : 'نادي' }})
+                        </span>
+                        <span class="badge" [class.bg-warning]="offer.status === 'PENDING'" [class.bg-success]="offer.status === 'ACCEPTED'" [class.bg-danger]="offer.status === 'REJECTED'">
+                          {{ offer.status === 'PENDING' ? 'قيد الانتظار' : (offer.status === 'ACCEPTED' ? 'تم القبول ✅' : 'تم الرفض ❌') }}
+                        </span>
+                      </div>
+
+                      <p class="mb-1 text-sm"><strong>التاريخ المحدد:</strong> {{ offer.trialDate }}</p>
+                      <p class="mb-1 text-sm"><strong>العنوان والمكان:</strong> {{ offer.location }}</p>
+                      @if (offer.details) {
+                        <p class="text-muted text-xs mt-2 p-2 bg-dark rounded">{{ offer.details }}</p>
+                      }
+
+                      @if (offer.status === 'PENDING') {
+                        <div class="d-flex gap-2 mt-3">
+                          <button (click)="updateOfferStatus(offer.id, 'ACCEPTED')" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="fa-solid fa-check"></i> قبول الطلب
+                          </button>
+                          <button (click)="updateOfferStatus(offer.id, 'REJECTED')" class="btn btn-outline-danger btn-sm">
+                            <i class="fa-solid fa-xmark"></i> رفض
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            } @else {
+              <!-- Scout Sent Offers -->
+              @if (sentOffers.length === 0) {
+                <div class="text-center py-5 text-muted glass-card">
+                  <i class="fa-solid fa-paper-plane fa-3x mb-2 opacity-50"></i>
+                  <p>لم تقم بإرسال أي طلبات معايشة للاعبين بعد. استعرض سوق اللاعبين وأرسل دعوات معايشة للمواهب!</p>
+                </div>
+              } @else {
+                <div class="offers-grid">
+                  @for (offer of sentOffers; track offer.id) {
+                    <div class="glass-card p-3 mb-3">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="text-emerald"><i class="fa-solid fa-user-ninja"></i> اللاعب: {{ offer.playerName }}</strong>
+                        <span class="badge" [class.bg-warning]="offer.status === 'PENDING'" [class.bg-success]="offer.status === 'ACCEPTED'" [class.bg-danger]="offer.status === 'REJECTED'">
+                          {{ offer.status === 'PENDING' ? 'قيد الانتظار' : (offer.status === 'ACCEPTED' ? 'تم القبول ✅' : 'تم الرفض ❌') }}
+                        </span>
+                      </div>
+                      <p class="mb-1 text-sm"><strong>تاريخ المعايشة:</strong> {{ offer.trialDate }}</p>
+                      <p class="mb-1 text-sm"><strong>المكان:</strong> {{ offer.location }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+
+        <!-- TAB 3: WATCHLIST -->
+        @if (activeTab === 'WATCHLIST') {
+          <div class="mt-4">
+            <h3 class="mb-3 text-gold"><i class="fa-solid fa-bookmark"></i> قائمة اللاعبين المحفوظين للمتابعة</h3>
+            
+            @if (bookmarkedPlayers.length === 0) {
+              <div class="text-center py-5 text-muted glass-card">
+                <i class="fa-solid fa-bookmark fa-3x mb-2 opacity-50"></i>
+                <p>قائمة المتابعة فارغة حالياً. اضغط على أيقونة الإشارة المرجعية <i class="fa-solid fa-bookmark text-gold"></i> بكروت سوق اللاعبين لحفظهم هنا.</p>
+              </div>
+            } @else {
+              <div class="players-grid">
+                @for (player of bookmarkedPlayers; track player.id) {
+                  <div class="glass-card player-card p-3 d-flex flex-column align-items-center text-center">
+                    <div class="player-avatar mb-2">
+                      <img 
+                        [src]="player.avatarUrl && player.avatarUrl.trim() !== '' ? player.avatarUrl : '/default-avatar.png'" 
+                        (error)="$any($event.target).src='/default-avatar.png'" 
+                        [alt]="player.fullName" 
+                        class="player-avatar-img"
+                      />
+                    </div>
+                    <h4 class="m-0 text-white">{{ player.fullName }}</h4>
+                    <span class="badge badge-player mt-1 mb-2">{{ playerPositionLabels[player.position].ar || player.position }}</span>
+                    <button (click)="removeBookmark(player)" class="btn btn-outline-danger btn-xs w-100 mt-2">
+                      <i class="fa-solid fa-trash-can"></i> إزالة من القائمة
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

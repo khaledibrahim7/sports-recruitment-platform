@@ -1,0 +1,63 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: sports-recruitment-backend
+
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:SportsPlatform};encrypt=${DB_ENCRYPT:false};trustServerCertificate=${DB_TRUST_CERT:true}
+    username: ${DB_USERNAME:hr-user}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 30
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.0-flash}
+    api-version: ${GEMINI_API_VERSION:v1beta}
+    temperature: ${GEMINI_TEMPERATURE:0.7}
+    max-output-tokens: ${GEMINI_MAX_TOKENS:2000}
+  security:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200}
+    trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}
+  rate-limit:
+    general-rpm: ${RATE_LIMIT_GENERAL:100}
+    auth-rpm: ${RATE_LIMIT_AUTH:10}
+    ai-rpm: ${RATE_LIMIT_AI:20}
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sports.recruitment</groupId>
+        <artifactId>sports-recruitment-backend</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sports-web</artifactId>
+    <name>sports-web</name>
+    <description>Executable Entry Point, REST Controllers, Aggregator and Fat JAR Generator</description>
+
+    <dependencies>
+        <!-- Feature Modules Dependencies -->
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-player</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-academy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-club</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-ai</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starters -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Logging API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- DB Driver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Swagger / OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>com.sports.web.SportsRecruitmentApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

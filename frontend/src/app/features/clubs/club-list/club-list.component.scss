@@ -1,0 +1,81 @@
+.search-card {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2.5rem;
+
+  .search-flex {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.clubs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+.club-card {
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .club-logo {
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    background: #1c2742;
+    border: 2px solid var(--accent-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--accent-gold);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .club-name {
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .club-meta {
+    margin-bottom: 1rem;
+
+    .city {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+  }
+
+  .club-desc {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.6;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .contact-email {
+    font-size: 0.88rem;
+    padding: 0.5rem;
+  }
+
+  .card-footer {
+    width: 100%;
+    margin-top: auto;
+  }
+}

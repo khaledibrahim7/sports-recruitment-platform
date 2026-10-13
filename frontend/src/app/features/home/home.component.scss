@@ -1,0 +1,304 @@
+/* Home Page — Editorial Dark Luxury */
+.home-wrapper {
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════════
+   Hero Section
+══════════════════════════════════════════ */
+.hero-section {
+  position: relative;
+  padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+  border-bottom: 1px solid var(--rule);
+
+  /* Subtle radial glow behind hero */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse at top, rgba(201,151,74,.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-container { position: relative; z-index: 2; }
+
+  .hero-content {
+    max-width: 840px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Eyebrow pill label — مثل الموقع المرجعي */
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .32rem 1rem;
+    border-radius: var(--radius-full);
+    background: rgba(201,151,74,.09);
+    border: 1px solid rgba(201,151,74,.28);
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: var(--acc);
+    margin-bottom: 1.35rem;
+    text-transform: uppercase;
+  }
+
+  /* Large editorial heading */
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.1rem;
+    letter-spacing: -.5px;
+
+    .highlight {
+      color: var(--acc);
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) { font-size: 1.85rem; }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(.9rem, 2vw, 1.05rem);
+    color: var(--mute);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Stats Bar — editorial numbered style
+══════════════════════════════════════════ */
+.hero-stats-wrapper {
+  width: 100%;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;                          /* thin rule between items */
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+
+    @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 500px) { grid-template-columns: 1fr; }
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    padding: 1.35rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background .2s ease;
+
+    &:hover { background: var(--bg-card-2); }
+
+    .stat-icon-wrap {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      border: 1px solid var(--rule);
+
+      &.icon-players   { background: rgba(201,151,74,.1);  color: var(--acc);  }
+      &.icon-academies { background: rgba(176,90,47,.1);   color: #D4825A;     }
+      &.icon-clubs     { background: rgba(148,163,184,.08);color: #94a3b8;     }
+      &.icon-scouting  { background: rgba(167,139,250,.08);color: #a78bfa;     }
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      text-align: right;
+
+      /* Large serif number — like reference site */
+      .number {
+        font-family: var(--font-num);
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1;
+        letter-spacing: -.04em;
+      }
+
+      .label {
+        font-size: .75rem;
+        color: var(--mute);
+        font-weight: 500;
+        margin-top: .3rem;
+        white-space: nowrap;
+        letter-spacing: .03em;
+      }
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   Bento Section (Features)
+══════════════════════════════════════════ */
+.bento-section {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+  border-bottom: 1px solid var(--rule);
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+
+    @media (max-width: 960px)  { grid-template-columns: 1fr; }
+  }
+
+  .bento-tile {
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 220px;
+
+    /* eyebrow */
+    .tile-badge {
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--mute);
+      margin-bottom: .9rem;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: .55rem;
+      color: var(--ink);
+    }
+
+    p {
+      color: var(--mute);
+      font-size: .86rem;
+      line-height: 1.6;
+      flex: 1;
+      margin-bottom: 1.1rem;
+    }
+
+    .tile-preview-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem;
+
+      .tag-pill {
+        background: rgba(201,151,74,.07);
+        border: 1px solid rgba(201,151,74,.18);
+        padding: .25rem .65rem;
+        border-radius: var(--radius-full);
+        font-size: .73rem;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+      }
+    }
+  }
+
+  .bento-tile-large {
+    grid-column: span 2;
+    @media (max-width: 960px) { grid-column: span 1; }
+  }
+}
+
+/* ══════════════════════════════════════════
+   Section Headers — editorial style
+══════════════════════════════════════════ */
+.section-header {
+  margin-bottom: 2.25rem;
+
+  /* Eyebrow line above h2 — like reference */
+  &::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: var(--acc);
+    margin-bottom: .75rem;
+    border-radius: 2px;
+  }
+
+  &.flex-between {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    &::before { display: none; }    /* no line in flex mode */
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    font-weight: 700;
+    margin-bottom: .3rem;
+    color: var(--ink);
+  }
+
+  p {
+    color: var(--mute);
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Players Showcase Section
+══════════════════════════════════════════ */
+.players-showcase {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+
+.bg-alt {
+  background: var(--bg-card);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.section-padding {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}

@@ -1,0 +1,49 @@
+<div class="page-container section-padding">
+  <div class="container">
+    <div class="page-header">
+      <span class="badge badge-academy mb-2"><i class="fa-solid fa-graduation-cap"></i> دليل الأكاديميات</span>
+      <h1>الأكاديميات الرياضية المعتمدة</h1>
+      <p>تصفح قائمة الأكاديميات الرياضية وزر صفحاتها الرسمية للتسجيل والتدريب</p>
+    </div>
+
+    <!-- Academies Grid -->
+    @if (isLoading) {
+      <div class="loading-spinner text-center py-5">
+        <i class="fa-solid fa-spinner fa-spin fa-2x text-secondary"></i>
+        <p class="mt-2 text-muted">جاري تحميل قائمة الأكاديميات...</p>
+      </div>
+    } @else if (academies.length === 0) {
+      <div class="glass-card empty-state text-center py-5">
+        <i class="fa-solid fa-graduation-cap fa-3x text-muted mb-3"></i>
+        <h3>لم يتم العثور على أكاديميات مطابقة</h3>
+        <p class="text-muted">تصفح كل الأكاديميات المسجلة.</p>
+      </div>
+    } @else {
+      <div class="academies-grid mt-4">
+        @for (academy of academies; track academy.id) {
+          <div class="glass-card academy-card">
+            <div class="academy-logo">
+              @if (academy.logoUrl) {
+                <img [src]="academy.logoUrl" [alt]="academy.academyName" />
+              } @else {
+                <i class="fa-solid fa-graduation-cap"></i>
+              }
+            </div>
+
+            <h3 class="academy-name">{{ academy.academyName }}</h3>
+
+            <p class="academy-desc">{{ academy.description || 'أكاديمية رياضية متخصصة في تطوير وتدريب المواهب والناشئين.' }}</p>
+
+            <div class="card-footer">
+              @if (academy.websiteOrPageUrl) {
+                <a [href]="academy.websiteOrPageUrl" target="_blank" class="btn btn-secondary w-100">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> زيارة صفحة الأكاديمية
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,129 @@
+.max-w-900 {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  padding: 2.5rem;
+
+  .profile-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      color: var(--primary-color);
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 0.2rem;
+    }
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .alert-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+}
+
+.avatar-preview-box {
+  width: 90px;
+  height: 90px;
+  min-width: 90px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-dark);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 18px rgba(0, 255, 135, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .avatar-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.form-range {
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.text-emerald {
+  color: #10b981;
+}
+
+.border-emerald {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dir-ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+.video-playlist-item {
+  background: rgba(10, 15, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(15, 23, 42, 0.9);
+  }
+
+  .video-url-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}

@@ -1,0 +1,278 @@
+<div class="page-container section-padding">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <span class="badge badge-player mb-2"><i class="fa-solid fa-chart-pie"></i> قاعدة بيانات التكشيف</span>
+        <h1>السجلات الفنية للاعبين</h1>
+        <p>تصفية وتحليل القياسات البدنية والمقاطع التكتيكية للاعبين المسجلين في المنظومة</p>
+      </div>
+    </div>
+
+    <!-- Technical Filter Control Panel -->
+    <div class="glass-card filter-card">
+      <div class="filter-grid">
+        <div class="form-group">
+          <label><i class="fa-solid fa-magnifying-glass"></i> البحث باسم اللاعب</label>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="أدخل اسم اللاعب..." class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-crosshairs"></i> المركز التكتيكي</label>
+          <select [(ngModel)]="selectedPosition" (change)="onFilterChange()" class="form-select">
+            <option value="">كافة المراكز</option>
+            @for (pos of playerPositions; track pos) {
+              <option [value]="pos">{{ playerPositionLabels[pos].ar }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-calendar-days"></i> الفئة العمرية (السن)</label>
+          <input type="number" [(ngModel)]="age" (change)="onFilterChange()" placeholder="مثال: 18" class="form-control" />
+        </div>
+      </div>
+
+      <div class="filter-actions mt-3">
+        <button (click)="onFilterChange()" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-filter"></i> تطبيق التصفية
+        </button>
+        <button (click)="resetFilters()" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-rotate-left"></i> إعادة ضبط
+        </button>
+      </div>
+    </div>
+
+    <!-- Players Grid -->
+    @if (isLoading) {
+      <div class="loading-spinner text-center py-5">
+        <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+        <p class="mt-2 text-muted">جاري تحميل السجلات الفنية للاعبين...</p>
+      </div>
+    } @else if (filteredPlayers.length === 0) {
+      <div class="empty-state-wrapper">
+        <!-- أيقونة الملعب -->
+        <div class="empty-icon-wrap">
+          <i class="fa-solid fa-futbol empty-ball"></i>
+          <div class="empty-field-lines">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- رسالة مخصصة حسب الفلتر المطبّق -->
+        @if (selectedPosition && !searchQuery) {
+          <h3 class="empty-title">لا يوجد لاعبون في هذا المركز</h3>
+          <div class="empty-filter-tag">
+            <i class="fa-solid fa-crosshairs"></i>
+            {{ playerPositionLabels[selectedPosition].ar }}
+          </div>
+          <p class="empty-desc">
+            لا يوجد لاعبون مسجّلون في مركز
+            <strong>{{ playerPositionLabels[selectedPosition].ar }}</strong>
+            حتى الآن في قاعدة البيانات.
+          </p>
+        } @else if (searchQuery && !selectedPosition) {
+          <h3 class="empty-title">لا يوجد لاعب بهذا الاسم</h3>
+          <div class="empty-filter-tag">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            "{{ searchQuery }}"
+          </div>
+          <p class="empty-desc">
+            لم يتم العثور على أي لاعب يطابق البحث
+            <strong>"{{ searchQuery }}"</strong>.
+            تأكد من كتابة الاسم بشكل صحيح.
+          </p>
+        } @else if (selectedPosition && searchQuery) {
+          <h3 class="empty-title">لا توجد نتائج لهذه المعايير</h3>
+          <div class="empty-filters-combined">
+            <div class="empty-filter-tag">
+              <i class="fa-solid fa-crosshairs"></i>
+              {{ playerPositionLabels[selectedPosition].ar }}
+            </div>
+            <span class="empty-plus">+</span>
+            <div class="empty-filter-tag">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              "{{ searchQuery }}"
+            </div>
+          </div>
+          <p class="empty-desc">
+            لا يوجد لاعب يجمع بين مركز
+            <strong>{{ playerPositionLabels[selectedPosition].ar }}</strong>
+            واسم <strong>"{{ searchQuery }}"</strong>.
+          </p>
+        } @else if (age) {
+          <h3 class="empty-title">لا يوجد لاعبون في هذه الفئة العمرية</h3>
+          <div class="empty-filter-tag">
+            <i class="fa-solid fa-calendar-days"></i>
+            {{ age }} سنة
+          </div>
+          <p class="empty-desc">
+            لا يوجد لاعبون مسجّلون بعمر <strong>{{ age }} سنة</strong> حالياً.
+          </p>
+        } @else {
+          <h3 class="empty-title">لا يوجد لاعبون مسجّلون بعد</h3>
+          <p class="empty-desc">لم يتم تسجيل أي لاعب في المنظومة حتى الآن.</p>
+        }
+
+        <!-- أزرار المسح السريع -->
+        <div class="empty-actions">
+          @if (selectedPosition) {
+            <button (click)="selectedPosition = ''; onFilterChange()" class="btn btn-outline btn-sm">
+              <i class="fa-solid fa-xmark"></i>
+              مسح فلتر المركز
+            </button>
+          }
+          @if (searchQuery) {
+            <button (click)="searchQuery = ''" class="btn btn-outline btn-sm">
+              <i class="fa-solid fa-xmark"></i>
+              مسح البحث
+            </button>
+          }
+          <button (click)="resetFilters()" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-rotate-left"></i>
+            عرض كافة اللاعبين
+          </button>
+        </div>
+      </div>
+
+    } @else {
+      <div class="players-grid mt-4">
+        @for (player of filteredPlayers; track player.id) {
+          <div class="glass-card player-card">
+            <div class="card-badge d-flex justify-content-between align-items-center w-100 px-3 pt-2">
+              <div class="d-flex flex-wrap gap-1 align-items-center">
+                <span class="badge badge-player">
+                  {{ playerPositionLabels[player.position].ar || player.position }}
+                </span>
+                @if (player.secondaryPositions && player.secondaryPositions.length > 0) {
+                  @for (secPos of player.secondaryPositions; track secPos) {
+                    <span class="badge badge-academy" title="مركز ثانوي">
+                      {{ playerPositionLabels[secPos].ar }}
+                    </span>
+                  }
+                }
+              </div>
+              @if (canBookmark()) {
+                <button 
+                  type="button" 
+                  (click)="toggleBookmark(player, $event)" 
+                  class="btn-bookmark"
+                  [class.active]="isBookmarked(player.id)"
+                  [title]="isBookmarked(player.id) ? 'إزالة من قائمة المتابعة والتكشيف' : 'إضافة لقائمة المتابعة والتكشيف'"
+                >
+                  <i [class]="isBookmarked(player.id) ? 'fa-solid fa-bookmark text-gold' : 'fa-regular fa-bookmark'"></i>
+                </button>
+              }
+            </div>
+
+            <div class="player-avatar">
+              <img 
+                [src]="player.avatarUrl && player.avatarUrl.trim() !== '' ? player.avatarUrl : '/default-avatar.png'" 
+                (error)="$any($event.target).src='/default-avatar.png'" 
+                [alt]="player.fullName" 
+                class="player-avatar-img"
+              />
+            </div>
+
+            <h3 class="player-name">{{ player.fullName }}</h3>
+            
+            <div class="player-stats-bar d-flex align-items-center justify-content-around">
+              <div class="stat">
+                <span class="val">{{ player.age }}</span>
+                <span class="lbl">سنة</span>
+              </div>
+              <div class="stat">
+                <span class="val">{{ player.heightCm || 175 }}</span>
+                <span class="lbl">سم</span>
+              </div>
+              <div class="stat">
+                <span class="val">{{ player.weightKg || 70 }}</span>
+                <span class="lbl">كجم</span>
+              </div>
+            </div>
+
+            <p class="player-bio">{{ player.bio || 'سجل بدني وفني مسجل في قاعدة بيانات التكشيف.' }}</p>
+
+            <div class="card-footer w-100 d-flex flex-column gap-2 mt-auto">
+              <div class="d-flex gap-2">
+                <button (click)="openVideo(player)" class="btn btn-primary btn-sm flex-grow-1">
+                  <i class="fa-solid fa-circle-play"></i> المقاطع التحليلية
+                  @if (player.videoUrls && player.videoUrls.length > 1) {
+                    <span class="badge bg-dark ms-1">({{ player.videoUrls.length }})</span>
+                  }
+                </button>
+                <button (click)="openRadarModal(player, $event)" class="btn btn-outline btn-sm">
+                  <i class="fa-solid fa-chart-pie text-gold"></i> تقييم الأداء
+                </button>
+              </div>
+
+
+              @if (canBookmark()) {
+                <button (click)="openTrialModal(player, $event)" class="btn btn-secondary btn-sm w-100">
+                  <i class="fa-solid fa-paper-plane"></i> إرسال طلب فترة معايشة
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Video Modal -->
+<app-video-modal
+  [isOpen]="isVideoModalOpen"
+  [videoUrl]="selectedVideoUrl"
+  [videoUrls]="selectedVideoUrls"
+  [playerName]="selectedPlayerName"
+  (close)="closeVideoModal()"
+></app-video-modal>
+
+<!-- Trial Offer Modal -->
+<app-trial-offer-modal
+  [isOpen]="isTrialModalOpen"
+  [playerId]="selectedTrialPlayerId"
+  [playerName]="selectedTrialPlayerName"
+  (close)="closeTrialModal()"
+></app-trial-offer-modal>
+
+<!-- Radar Chart Modal -->
+@if (isRadarModalOpen && selectedRadarPlayer) {
+  <div class="modal-backdrop" (click)="closeRadarModal()">
+    <div class="modal-container glass-card modal-radar-container" (click)="$event.stopPropagation()">
+      <div class="modal-header d-flex justify-content-between align-items-center p-3 bg-dark border-bottom border-secondary">
+        <div class="modal-title d-flex align-items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-gold fs-4"></i>
+          <div>
+            <h3 class="m-0 text-white fs-5">التحليل الراداري للقدرات</h3>
+            <span class="text-primary small font-semibold">اللاعب: <strong>{{ selectedRadarPlayer.fullName }}</strong></span>
+          </div>
+        </div>
+        <button type="button" (click)="closeRadarModal()" class="btn-close-modal" title="إغلاق النافذة">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body p-4 text-center">
+        <app-radar-chart
+          [pace]="selectedRadarPlayer.pace || 75"
+          [shooting]="selectedRadarPlayer.shooting || 70"
+          [passing]="selectedRadarPlayer.passing || 70"
+          [dribbling]="selectedRadarPlayer.dribbling || 75"
+          [defending]="selectedRadarPlayer.defending || 65"
+          [physicality]="selectedRadarPlayer.physicality || 70"
+        ></app-radar-chart>
+      </div>
+
+      <div class="modal-footer d-flex justify-content-between align-items-center p-3 bg-dark border-top border-secondary">
+        <span class="text-muted small">
+          <i class="fa-solid fa-shield-halved text-gold me-1"></i> التقييم الميداني المباشر للاعب
+        </span>
+        <button type="button" (click)="closeRadarModal()" class="btn btn-outline btn-sm px-4">
+          <i class="fa-solid fa-xmark"></i> إغلاق النافذة
+        </button>
+      </div>
+    </div>
+  </div>
+}

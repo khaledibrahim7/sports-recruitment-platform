@@ -1,0 +1,53 @@
+<div class="page-container section-padding">
+  <div class="container">
+    <div class="page-header">
+      <span class="badge badge-club mb-2"><i class="fa-solid fa-shield-halved"></i> دليل الأندية</span>
+      <h1>الأندية الرياضية والكشافة</h1>
+      <p>تصفح قائمة الأندية المسجلة والشعارات الرسمية وقنوات البحث عن المواهب</p>
+    </div>
+
+    <!-- Clubs Grid -->
+    @if (isLoading) {
+      <div class="loading-spinner text-center py-5">
+        <i class="fa-solid fa-spinner fa-spin fa-2x text-gold"></i>
+        <p class="mt-2 text-muted">جاري تحميل قائمة الأندية...</p>
+      </div>
+    } @else if (clubs.length === 0) {
+      <div class="glass-card empty-state text-center py-5">
+        <i class="fa-solid fa-shield-halved fa-3x text-muted mb-3"></i>
+        <h3>لم يتم العثور على أندية مطابقة</h3>
+        <p class="text-muted">تصفح كل الأندية المسجلة.</p>
+      </div>
+    } @else {
+      <div class="clubs-grid mt-4">
+        @for (club of clubs; track club.id) {
+          <div class="glass-card club-card">
+            <div class="club-logo">
+              @if (club.logoUrl) {
+                <img [src]="club.logoUrl" [alt]="club.clubName" />
+              } @else {
+                <i class="fa-solid fa-shield-halved"></i>
+              }
+            </div>
+
+            <h3 class="club-name">{{ club.clubName }}</h3>
+            
+            <div class="club-meta">
+              @if (club.cityCountry) {
+                <div class="city"><i class="fa-solid fa-location-dot text-gold"></i> {{ club.cityCountry }}</div>
+              }
+            </div>
+
+            <div class="card-footer mt-3">
+              @if (club.email) {
+                <div class="contact-email text-muted">
+                  <i class="fa-solid fa-envelope"></i> {{ club.email }}
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

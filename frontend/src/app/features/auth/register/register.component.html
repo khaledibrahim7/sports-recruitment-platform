@@ -1,0 +1,102 @@
+<div class="auth-container">
+  <div class="glass-card auth-card">
+    <div class="auth-header text-center">
+      <h2>إنشاء حساب جديد في المنصة</h2>
+      <p>اختر نوع الحساب وأدخل البريد والكلمة للانضمام الفوري</p>
+    </div>
+
+    <!-- Interactive 3 Role Selector Tabs -->
+    <div class="role-selector-tabs mb-4">
+      <button 
+        type="button" 
+        [class.active]="selectedRole === 'PLAYER'" 
+        (click)="selectRole('PLAYER')"
+        class="role-tab player"
+      >
+        <i class="fa-solid fa-person-running"></i>
+        <span>لاعب</span>
+      </button>
+
+      <button 
+        type="button" 
+        [class.active]="selectedRole === 'ACADEMY'" 
+        (click)="selectRole('ACADEMY')"
+        class="role-tab academy"
+      >
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>أكاديمية</span>
+      </button>
+
+      <button 
+        type="button" 
+        [class.active]="selectedRole === 'CLUB'" 
+        (click)="selectRole('CLUB')"
+        class="role-tab club"
+      >
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>نادي</span>
+      </button>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger mb-3">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني *</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          required 
+          placeholder="your.email@domain.com"
+          class="form-control"
+        />
+      </div>
+
+      <div class="grid-2 mt-3">
+        <div class="form-group">
+          <label for="password">كلمة المرور *</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            [(ngModel)]="password" 
+            required 
+            placeholder="••••••••"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">تأكيد كلمة المرور *</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            [(ngModel)]="confirmPassword" 
+            required 
+            placeholder="••••••••"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="isLoading" class="btn btn-primary btn-lg w-100 mt-4">
+        @if (isLoading) {
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء الحساب...
+        } @else {
+          <i class="fa-solid fa-check"></i> تأكيد وإنشاء الحساب
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer text-center mt-4">
+      <p>لديك حساب بالفعل؟ <a routerLink="/login" class="text-primary font-weight-bold">تسجيل الدخول</a></p>
+    </div>
+  </div>
+</div>

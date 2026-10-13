@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sports.recruitment</groupId>
+        <artifactId>sports-recruitment-backend</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sports-feature-ai</artifactId>
+    <name>sports-feature-ai</name>
+    <description>AI Scouting Agent Module - Google Gemini Integration for Player Analysis, Recommendations and Chat</description>
+
+    <dependencies>
+        <!-- Depends on common and player data -->
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-player</artifactId>
+        </dependency>
+
+        <!-- Spring Web for RestTemplate -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- OpenAPI docs -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+    </dependencies>
+</project>

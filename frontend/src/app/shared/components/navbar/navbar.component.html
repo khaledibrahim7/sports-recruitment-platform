@@ -1,0 +1,56 @@
+<nav class="navbar">
+  <div class="container navbar-container">
+    <a routerLink="/" class="brand-logo">
+      <div class="logo-icon-wrap">
+        <img src="/logo.png" alt="الكورة لعبتنا Logo" class="brand-logo-img" />
+      </div>
+      <div class="logo-text">
+        <span class="title">الكورة <span class="highlight">لعبتنا</span></span>
+        <span class="subtitle">منظومة التكشيف واستكشاف المواهب</span>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <i class="fa-solid fa-house"></i> الرئيسية
+      </a>
+      <a routerLink="/players" routerLinkActive="active" class="nav-item">
+        <i class="fa-solid fa-users"></i> دليل اللاعبين
+      </a>
+      <a routerLink="/academies" routerLinkActive="active" class="nav-item">
+        <i class="fa-solid fa-graduation-cap"></i> دليل الأكاديميات
+      </a>
+      <a routerLink="/clubs" routerLinkActive="active" class="nav-item">
+        <i class="fa-solid fa-shield-halved"></i> دليل الأندية
+      </a>
+    </div>
+
+    <div class="nav-auth">
+      @if (isLoggedIn()) {
+        <div class="user-menu d-flex align-items-center gap-2">
+          <app-notifications-dropdown></app-notifications-dropdown>
+          <a routerLink="/profile" class="user-info" title="إدارة حسابك والبروفايل الشخصي">
+            <i class="fa-solid fa-circle-user text-primary"></i>
+            <span class="user-email">{{ currentUser()?.email }}</span>
+            <span class="badge" [ngClass]="getRoleClass(currentUser()?.role)">
+              {{ getRoleLabel(currentUser()?.role) }}
+            </span>
+          </a>
+          <button (click)="logout()" class="btn btn-logout" title="تسجيل الخروج من الحساب">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      } @else {
+        <div class="auth-buttons">
+          <a routerLink="/login" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> تسجيل الدخول
+          </a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-user-plus"></i> إنشاء حساب
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</nav>

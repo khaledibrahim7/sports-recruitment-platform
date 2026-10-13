@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sports.recruitment</groupId>
+        <artifactId>sports-recruitment-backend</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sports-feature-academy</artifactId>
+    <name>sports-feature-academy</name>
+    <description>Academy Profile Management Feature Module</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sports.recruitment</groupId>
+            <artifactId>sports-feature-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+    </dependencies>
+</project>

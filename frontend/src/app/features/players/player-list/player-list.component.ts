@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
-import { PlayerPosition, PlayerPositionLabels, PlayerProfile } from '../../../core/models/models';
+import { PlayerPosition, PlayerPositionLabels, PublicPlayerProfile } from '../../../core/models/models';
 import { VideoModalComponent } from '../../../shared/components/video-modal/video-modal.component';
 import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
 import { TrialOfferModalComponent } from '../../../shared/components/trial-offer-modal/trial-offer-modal.component';
@@ -17,21 +17,19 @@ import { TrialOfferModalComponent } from '../../../shared/components/trial-offer
   styleUrls: ['./player-list.component.scss']
 })
 export class PlayerListComponent implements OnInit {
-  public players: PlayerProfile[] = [];
+  public players: PublicPlayerProfile[] = [];
   public selectedPosition: PlayerPosition | '' = '';
   public searchQuery = '';
   public age: number | null = null;
   public isLoading = false;
+  public loadError = '';
+  public currentPage = 0;
+  public pageSize = 12;
+  public totalPages = 0;
+  public totalPlayers = 0;
 
-  public get filteredPlayers(): PlayerProfile[] {
-    if (!this.searchQuery || this.searchQuery.trim() === '') {
-      return this.players;
-    }
-    const q = this.searchQuery.toLowerCase().trim();
-    return this.players.filter(p => 
-      p.fullName.toLowerCase().includes(q) || 
-      (p.bio && p.bio.toLowerCase().includes(q))
-    );
+  public get filteredPlayers(): PublicPlayerProfile[] {
+    return this.players;
   }
 
   public playerPositions = Object.keys(PlayerPositionLabels) as PlayerPosition[];
@@ -50,7 +48,7 @@ export class PlayerListComponent implements OnInit {
 
   // Radar Chart Modal
   public isRadarModalOpen = false;
-  public selectedRadarPlayer: PlayerProfile | null = null;
+  public selectedRadarPlayer: PublicPlayerProfile | null = null;
 
   constructor(
     private playerService: PlayerService,
@@ -58,7 +56,7 @@ export class PlayerListComponent implements OnInit {
     public authService: AuthService
   ) {}
 
-  public openTrialModal(player: PlayerProfile, event: Event): void {
+  public openTrialModal(player: PublicPlayerProfile, event: Event): void {
     event.stopPropagation();
     this.selectedTrialPlayerId = player.id;
     this.selectedTrialPlayerName = player.fullName;
@@ -71,7 +69,7 @@ export class PlayerListComponent implements OnInit {
     this.selectedTrialPlayerName = '';
   }
 
-  public openRadarModal(player: PlayerProfile, event: Event): void {
+  public openRadarModal(player: PublicPlayerProfile, event: Event): void {
     event.stopPropagation();
     this.selectedRadarPlayer = player;
     this.isRadarModalOpen = true;
@@ -94,7 +92,7 @@ export class PlayerListComponent implements OnInit {
     return role === 'ACADEMY' || role === 'CLUB';
   }
 
-  public toggleBookmark(player: PlayerProfile, event: Event): void {
+  public toggleBookmark(player: PublicPlayerProfile, event: Event): void {
     event.stopPropagation();
     this.bookmarkService.toggleBookmark(player.id).subscribe();
   }
@@ -105,34 +103,58 @@ export class PlayerListComponent implements OnInit {
 
   public loadPlayers(): void {
     this.isLoading = true;
+    this.loadError = '';
     this.playerService.getPlayers(
       this.selectedPosition,
-      this.age
+      this.age,
+      this.searchQuery,
+      this.currentPage,
+      this.pageSize
     ).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.success && res.data) {
-          this.players = res.data;
+          this.players = res.data.items;
+          this.currentPage = res.data.page;
+          this.totalPages = res.data.totalPages;
+          this.totalPlayers = res.data.totalElements;
+        } else {
+          this.players = [];
+          this.loadError = 'تعذر تحميل دليل اللاعبين. حاول مرة أخرى.';
         }
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
+        this.players = [];
+        this.loadError = err.status === 0
+          ? 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم أعد المحاولة.'
+          : 'حدث خطأ أثناء تحميل دليل اللاعبين. حاول مرة أخرى.';
       }
     });
   }
 
   public onFilterChange(): void {
+    this.currentPage = 0;
     this.loadPlayers();
+  }
+
+  public changePage(page: number): void {
+    if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadPlayers();
+    const container = document.querySelector('.page-header');
+    container?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   public resetFilters(): void {
     this.selectedPosition = '';
     this.searchQuery = '';
     this.age = null;
+    this.currentPage = 0;
     this.loadPlayers();
   }
 
-  public openVideo(player: PlayerProfile): void {
+  public openVideo(player: PublicPlayerProfile): void {
     this.selectedVideoUrl = player.videoUrl || '';
     this.selectedVideoUrls = player.videoUrls && player.videoUrls.length > 0 ? player.videoUrls : (player.videoUrl ? [player.videoUrl] : []);
     this.selectedPlayerName = player.fullName;

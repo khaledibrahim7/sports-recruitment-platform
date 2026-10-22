@@ -10,8 +10,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        // Automatically logout and clear session on 401/403 unauthenticated response
+      const requestUrl = new URL(req.url, typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+      const isSameOriginApi = typeof window !== 'undefined' && requestUrl.origin === window.location.origin && requestUrl.pathname.startsWith('/api/');
+      if (isSameOriginApi && error.status === 401) {
+        // A forbidden response can be a valid authenticated user lacking permission.
         if (authService.isLoggedIn()) {
           authService.logout();
           router.navigate(['/login'], { queryParams: { returnUrl: router.url } });

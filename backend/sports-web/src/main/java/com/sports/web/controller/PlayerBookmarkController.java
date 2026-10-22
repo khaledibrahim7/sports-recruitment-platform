@@ -2,7 +2,7 @@ package com.sports.web.controller;
 
 import com.sports.common.dto.ApiResponse;
 import com.sports.common.security.UserPrincipal;
-import com.sports.player.dto.PlayerProfileDto;
+import com.sports.player.dto.PublicPlayerProfileDto;
 import com.sports.player.service.PlayerBookmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,9 +39,9 @@ public class PlayerBookmarkController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ACADEMY', 'CLUB')")
     @Operation(summary = "Get list of all players saved in scout's watchlist")
-    public ResponseEntity<ApiResponse<List<PlayerProfileDto>>> getBookmarkedPlayers(
+    public ResponseEntity<ApiResponse<List<PublicPlayerProfileDto>>> getBookmarkedPlayers(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        List<PlayerProfileDto> players = bookmarkService.getBookmarkedPlayers(userPrincipal.getId());
+        List<PublicPlayerProfileDto> players = bookmarkService.getBookmarkedPlayers(userPrincipal.getId());
         return ResponseEntity.ok(ApiResponse.ok(players));
     }
 

@@ -21,8 +21,11 @@ public class PlayerProfile extends BaseEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = false, unique = true, insertable = false, updatable = false)
     private User user;
+
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -30,16 +33,46 @@ public class PlayerProfile extends BaseEntity {
     @Column(nullable = false)
     private Integer age = 18;
 
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
+
+    @Column(length = 80)
+    private String nationality;
+
+    @Column(name = "city_country", length = 120)
+    private String cityCountry;
+
+    @Column(name = "current_team", length = 120)
+    private String currentTeam;
+
+    @Column(name = "competition_level", length = 30)
+    private String competitionLevel;
+
+    @Column(name = "player_goal", length = 500)
+    private String playerGoal;
+
+    @Column(name = "available_for_transfer", nullable = false)
+    private boolean availableForTransfer;
+
+    @Column(name = "guardian_name", length = 120)
+    private String guardianName;
+
+    @Column(name = "guardian_phone", length = 20)
+    private String guardianPhone;
+
+    @Column(name = "guardian_consent_at")
+    private java.time.Instant guardianConsentAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private PlayerPosition position = PlayerPosition.STRIKER;
 
-    @Column(name = "video_url", length = 500)
+    @Column(name = "video_url", length = 2048)
     private String videoUrl;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "player_videos", joinColumns = @JoinColumn(name = "player_profile_id"))
-    @Column(name = "video_url", length = 500)
+    @Column(name = "video_url", length = 2048)
     private List<String> videoUrls = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -92,22 +125,48 @@ public class PlayerProfile extends BaseEntity {
         this.age = age != null ? age : 18;
         this.position = position != null ? position : PlayerPosition.STRIKER;
         this.videoUrl = videoUrl;
-        if (videoUrl != null && !videoUrl.isBlank()) {
-            this.videoUrls.add(videoUrl);
-        }
+        if (videoUrl != null && !videoUrl.isBlank()) this.videoUrls.add(videoUrl);
     }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
     public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public void setUser(User user) { this.user = user; this.userId = user != null ? user.getId() : null; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
+
+    public java.time.LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(java.time.LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public String getNationality() { return nationality; }
+    public void setNationality(String nationality) { this.nationality = nationality; }
+
+    public String getCityCountry() { return cityCountry; }
+    public void setCityCountry(String cityCountry) { this.cityCountry = cityCountry; }
+
+    public String getCurrentTeam() { return currentTeam; }
+    public void setCurrentTeam(String currentTeam) { this.currentTeam = currentTeam; }
+
+    public String getCompetitionLevel() { return competitionLevel; }
+    public void setCompetitionLevel(String competitionLevel) { this.competitionLevel = competitionLevel; }
+    public String getPlayerGoal() { return playerGoal; }
+    public void setPlayerGoal(String playerGoal) { this.playerGoal = playerGoal; }
+    public boolean isAvailableForTransfer() { return availableForTransfer; }
+    public void setAvailableForTransfer(boolean availableForTransfer) { this.availableForTransfer = availableForTransfer; }
+    public String getGuardianName() { return guardianName; }
+    public void setGuardianName(String guardianName) { this.guardianName = guardianName; }
+    public String getGuardianPhone() { return guardianPhone; }
+    public void setGuardianPhone(String guardianPhone) { this.guardianPhone = guardianPhone; }
+    public java.time.Instant getGuardianConsentAt() { return guardianConsentAt; }
+    public void setGuardianConsentAt(java.time.Instant guardianConsentAt) { this.guardianConsentAt = guardianConsentAt; }
 
     public PlayerPosition getPosition() { return position; }
     public void setPosition(PlayerPosition position) { this.position = position; }

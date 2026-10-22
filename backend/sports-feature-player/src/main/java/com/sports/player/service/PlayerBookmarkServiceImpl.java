@@ -2,7 +2,7 @@ package com.sports.player.service;
 
 import com.sports.player.domain.PlayerBookmark;
 import com.sports.player.domain.PlayerProfile;
-import com.sports.player.dto.PlayerProfileDto;
+import com.sports.player.dto.PublicPlayerProfileDto;
 import com.sports.player.repository.PlayerBookmarkRepository;
 import com.sports.player.repository.PlayerProfileRepository;
 import org.springframework.stereotype.Service;
@@ -48,10 +48,10 @@ public class PlayerBookmarkServiceImpl implements PlayerBookmarkService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PlayerProfileDto> getBookmarkedPlayers(Long scoutUserId) {
+    public List<PublicPlayerProfileDto> getBookmarkedPlayers(Long scoutUserId) {
         List<PlayerBookmark> bookmarks = bookmarkRepository.findAllByScoutUserIdWithPlayer(scoutUserId);
         return bookmarks.stream()
-                .map(b -> PlayerProfileDto.fromEntity(b.getPlayer()))
+                .map(b -> PublicPlayerProfileDto.fromEntity(b.getPlayer()))
                 .toList();
     }
 

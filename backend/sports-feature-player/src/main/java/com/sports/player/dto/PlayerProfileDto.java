@@ -13,10 +13,21 @@ public class PlayerProfileDto {
     private Long userId;
     private String fullName;
     private Integer age;
+    private java.time.LocalDate birthDate;
+    private String nationality;
+    private String cityCountry;
+    private String currentTeam;
+    private String competitionLevel;
+    private String playerGoal;
+    private boolean availableForTransfer;
+    private String guardianName;
+    private String guardianPhone;
+    private java.time.Instant guardianConsentAt;
     private PlayerPosition position;
     private Set<PlayerPosition> secondaryPositions = new HashSet<>();
     private String videoUrl;
     private List<String> videoUrls = new ArrayList<>();
+    private List<String> uploadedVideoUrls = new ArrayList<>();
     private String bio;
     private String phone;
     private String email;
@@ -44,10 +55,21 @@ public class PlayerProfileDto {
         }
         dto.setFullName(entity.getFullName());
         dto.setAge(entity.getAge());
+        dto.setBirthDate(entity.getBirthDate());
+        dto.setNationality(entity.getNationality());
+        dto.setCityCountry(entity.getCityCountry());
+        dto.setCurrentTeam(entity.getCurrentTeam());
+        dto.setCompetitionLevel(entity.getCompetitionLevel());
+        dto.setPlayerGoal(entity.getPlayerGoal());
+        dto.setAvailableForTransfer(entity.isAvailableForTransfer());
+        dto.setGuardianName(entity.getGuardianName());
+        dto.setGuardianPhone(entity.getGuardianPhone());
+        dto.setGuardianConsentAt(entity.getGuardianConsentAt());
         dto.setPosition(entity.getPosition());
         dto.setSecondaryPositions(entity.getSecondaryPositions() != null ? new HashSet<>(entity.getSecondaryPositions()) : new HashSet<>());
         dto.setVideoUrl(entity.getVideoUrl());
         dto.setVideoUrls(entity.getVideoUrls() != null ? new ArrayList<>(entity.getVideoUrls()) : new ArrayList<>());
+        dto.setUploadedVideoUrls(dto.getVideoUrls().stream().filter(url -> url != null && url.startsWith("platform-video:")).collect(java.util.stream.Collectors.toList()));
         dto.setBio(entity.getBio());
         dto.setPhone(entity.getPhone());
         dto.setAvatarUrl(entity.getAvatarUrl());
@@ -77,6 +99,27 @@ public class PlayerProfileDto {
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
 
+    public java.time.LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(java.time.LocalDate birthDate) { this.birthDate = birthDate; }
+    public String getNationality() { return nationality; }
+    public void setNationality(String nationality) { this.nationality = nationality; }
+    public String getCityCountry() { return cityCountry; }
+    public void setCityCountry(String cityCountry) { this.cityCountry = cityCountry; }
+    public String getCurrentTeam() { return currentTeam; }
+    public void setCurrentTeam(String currentTeam) { this.currentTeam = currentTeam; }
+    public String getCompetitionLevel() { return competitionLevel; }
+    public void setCompetitionLevel(String competitionLevel) { this.competitionLevel = competitionLevel; }
+    public String getPlayerGoal() { return playerGoal; }
+    public void setPlayerGoal(String playerGoal) { this.playerGoal = playerGoal; }
+    public boolean isAvailableForTransfer() { return availableForTransfer; }
+    public void setAvailableForTransfer(boolean availableForTransfer) { this.availableForTransfer = availableForTransfer; }
+    public String getGuardianName() { return guardianName; }
+    public void setGuardianName(String guardianName) { this.guardianName = guardianName; }
+    public String getGuardianPhone() { return guardianPhone; }
+    public void setGuardianPhone(String guardianPhone) { this.guardianPhone = guardianPhone; }
+    public java.time.Instant getGuardianConsentAt() { return guardianConsentAt; }
+    public void setGuardianConsentAt(java.time.Instant guardianConsentAt) { this.guardianConsentAt = guardianConsentAt; }
+
     public PlayerPosition getPosition() { return position; }
     public void setPosition(PlayerPosition position) { this.position = position; }
 
@@ -85,6 +128,8 @@ public class PlayerProfileDto {
 
     public List<String> getVideoUrls() { return videoUrls; }
     public void setVideoUrls(List<String> videoUrls) { this.videoUrls = videoUrls; }
+    public List<String> getUploadedVideoUrls() { return uploadedVideoUrls; }
+    public void setUploadedVideoUrls(List<String> uploadedVideoUrls) { this.uploadedVideoUrls = uploadedVideoUrls; }
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }

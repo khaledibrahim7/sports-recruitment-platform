@@ -88,6 +88,41 @@
                 </div>
               </div>
 
+              <div class="grid-2 mt-3">
+                <div class="form-group">
+                  <label>تاريخ الميلاد</label>
+                  <input type="date" [(ngModel)]="playerForm.birthDate" name="birthDate" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>الجنسية</label>
+                  <input type="text" [(ngModel)]="playerForm.nationality" name="nationality" maxlength="80" class="form-control" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>مدينة ودولة الإقامة</label>
+                  <input type="text" [(ngModel)]="playerForm.cityCountry" name="cityCountry" maxlength="120" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>النادي أو الأكاديمية الحالية / السابقة</label>
+                  <input type="text" [(ngModel)]="playerForm.currentTeam" name="currentTeam" maxlength="120" class="form-control" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>مستوى المنافسة</label>
+                  <select [(ngModel)]="playerForm.competitionLevel" name="competitionLevel" class="form-select">
+                    <option value="">غير محدد</option>
+                    <option value="AMATEUR">هواة</option>
+                    <option value="ACADEMY">أكاديميات وناشئين</option>
+                    <option value="SEMI_PRO">شبه محترف</option>
+                    <option value="PROFESSIONAL">محترف</option>
+                  </select>
+                </div>
+              </div>
+
               <div class="grid-2">
                 <div class="form-group">
                   <label>المركز الرئيسي في الملعب *</label>
@@ -253,6 +288,13 @@
                       <i class="fa-solid fa-plus"></i> إضافة فيديو
                     </button>
                   </div>
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <input type="file" #videoFileInput accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/ogg" (change)="uploadVideoFile($event)" class="form-control" />
+                    <span class="text-muted text-sm whitespace-nowrap">أو ارفع ملفاً (حد 100 MB)</span>
+                  </div>
+                  @if (isUploadingVideo) {
+                    <div class="text-primary text-sm mb-3"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ رفع الفيديو إلى المنصة...</div>
+                  }
                 } @else {
                   <div class="alert alert-info py-2 px-3 mb-3 text-sm d-flex align-items-center gap-2">
                     <i class="fa-solid fa-circle-check text-gold"></i>
@@ -269,7 +311,7 @@
                             <i class="fa-solid fa-play"></i> فيديو {{ $index + 1 }}
                           </span>
                           <span class="video-url-text text-truncate font-mono text-sm text-muted dir-ltr">
-                            {{ vid }}
+                            {{ playerForm.uploadedVideoUrls.includes(vid) ? 'مرفوع على المنصة' : vid }}
                           </span>
                         </div>
                         <button 
@@ -295,6 +337,14 @@
                 <label>نبذة رياضية ومسيرة سابقة</label>
                 <textarea [(ngModel)]="playerForm.bio" name="bio" class="form-control"></textarea>
               </div>
+              <div class="form-group">
+                <label>هدف اللاعب</label>
+                <textarea [(ngModel)]="playerForm.playerGoal" name="playerGoal" class="form-control"></textarea>
+              </div>
+              <label class="form-check-label mb-3">
+                <input type="checkbox" [(ngModel)]="playerForm.availableForTransfer" name="availableForTransfer" />
+                متاح للانتقال أو استقبال عروض
+              </label>
             }
 
             <!-- Academy Profile Form -->
@@ -302,6 +352,16 @@
               <div class="form-group">
                 <label>اسم الأكاديمية *</label>
                 <input type="text" [(ngModel)]="academyForm.academyName" name="academyName" required class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>المقر: المدينة والدولة</label>
+                <input type="text" [(ngModel)]="academyForm.cityCountry" name="academyCityCountry" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>رقم هاتف الأكاديمية</label>
+                <input type="tel" [(ngModel)]="academyForm.contactPhone" name="academyContactPhone" class="form-control" />
               </div>
 
               <div class="form-group">
@@ -317,6 +377,14 @@
               <div class="form-group">
                 <label>وصف عن الأكاديمية</label>
                 <textarea [(ngModel)]="academyForm.description" name="description" class="form-control"></textarea>
+              </div>
+              <div class="form-group">
+                <label>الفئات العمرية</label>
+                <input type="text" [(ngModel)]="academyForm.ageGroups" name="academyAgeGroups" class="form-control" placeholder="مثال: U13, U15, U17" />
+              </div>
+              <div class="form-group">
+                <label>نوع التدريب</label>
+                <input type="text" [(ngModel)]="academyForm.trainingType" name="academyTrainingType" class="form-control" />
               </div>
             }
 
@@ -336,6 +404,27 @@
                 <label>المدينة / الدولة</label>
                 <input type="text" [(ngModel)]="clubForm.cityCountry" name="cityCountry" class="form-control" />
               </div>
+
+              <div class="form-group">
+                <label>رقم هاتف النادي</label>
+                <input type="tel" [(ngModel)]="clubForm.contactPhone" name="clubContactPhone" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>موقع أو صفحة النادي</label>
+                <input type="url" [(ngModel)]="clubForm.websiteOrPageUrl" name="clubWebsite" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>مستوى الدوري</label>
+                <input type="text" [(ngModel)]="clubForm.leagueLevel" name="clubLeagueLevel" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>نبذة عن النادي</label>
+                <textarea [(ngModel)]="clubForm.description" name="clubDescription" class="form-control"></textarea>
+              </div>
+              <label class="form-check-label mb-3">
+                <input type="checkbox" [(ngModel)]="clubForm.activelyRecruiting" name="clubActivelyRecruiting" />
+                النادي يبحث عن لاعبين حالياً
+              </label>
             }
 
             <button type="submit" [disabled]="isSaving" class="btn btn-primary btn-lg w-100 mt-4">

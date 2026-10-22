@@ -31,6 +31,9 @@ public class CommonSecurityConfig {
     @Value("${app.security.allowed-origins:http://localhost:4200}")
     private String allowedOriginsRaw;
 
+    @Value("${app.storage.s3.endpoint:}")
+    private String storageEndpoint;
+
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
@@ -78,7 +81,7 @@ public class CommonSecurityConfig {
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of(
-                "Authorization", "Content-Type", "X-Requested-With",
+                "Authorization", "Content-Type", "X-Requested-With", "x-amz-content-sha256", "x-amz-date",
                 "Accept", "Origin", "Cache-Control"
         ));
         config.setExposedHeaders(List.of("Authorization"));
@@ -125,8 +128,8 @@ public class CommonSecurityConfig {
                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                         "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com; " +
                         "img-src 'self' data: blob: https:; " +
-                        "frame-src https://www.youtube.com https://drive.google.com https://player.vimeo.com; " +
-                        "connect-src 'self'; " +
+                        "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://player.vimeo.com; " +
+                        "connect-src 'self' " + storageConnectOrigin() + "; " +
                         "object-src 'none'; " +
                         "base-uri 'self'")
                 )
@@ -151,9 +154,12 @@ public class CommonSecurityConfig {
                 ).denyAll()
                 // Public read access to catalog (player/academy/club listings)
                 .requestMatchers(HttpMethod.GET,
+                    "/api/v1/players/videos/**",
                     "/api/v1/players/**",
-                    "/api/v1/academies/**",
-                    "/api/v1/clubs/**"
+                    "/api/v1/academies",
+                    "/api/v1/academies/{id}",
+                    "/api/v1/clubs",
+                    "/api/v1/clubs/{id}"
                 ).permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
@@ -163,5 +169,16 @@ public class CommonSecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    private String storageConnectOrigin() {
+        if (storageEndpoint == null || storageEndpoint.isBlank()) return "";
+        try {
+            java.net.URI endpoint = java.net.URI.create(storageEndpoint);
+            if (!"https".equalsIgnoreCase(endpoint.getScheme()) || endpoint.getHost() == null) return "";
+            return endpoint.getScheme() + "://" + endpoint.getAuthority();
+        } catch (IllegalArgumentException ex) {
+            return "";
+        }
     }
 }

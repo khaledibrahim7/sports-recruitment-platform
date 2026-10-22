@@ -19,6 +19,10 @@ export class ClubService {
     return this.http.get<ApiResponse<ClubProfile>>(`${this.API_URL}/${id}`);
   }
 
+  public getMyProfile(): Observable<ApiResponse<ClubProfile>> {
+    return this.http.get<ApiResponse<ClubProfile>>(`${this.API_URL}/me`);
+  }
+
   public updateMyProfile(payload: any): Observable<ApiResponse<ClubProfile>> {
     return this.http.put<ApiResponse<ClubProfile>>(`${this.API_URL}/me`, payload);
   }

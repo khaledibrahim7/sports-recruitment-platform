@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface AcademyProfileService {
     List<AcademyProfileDto> getAllAcademies();
+    List<AcademyProfileDto.PublicProfile> getPublicAcademies();
     AcademyProfileDto getAcademyById(Long id);
+    AcademyProfileDto.PublicProfile getPublicAcademyById(Long id);
     AcademyProfileDto getAcademyByUserId(Long userId);
     AcademyProfileDto createOrUpdateProfile(Long userId, AcademyProfileUpdateRequest request);
 }

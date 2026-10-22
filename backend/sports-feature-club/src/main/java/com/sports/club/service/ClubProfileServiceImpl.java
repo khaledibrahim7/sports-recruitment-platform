@@ -37,6 +37,19 @@ public class ClubProfileServiceImpl implements ClubProfileService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ClubProfileDto.PublicProfile> getPublicClubs() {
+        return clubProfileRepository.findAll().stream().map(ClubProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClubProfileDto.PublicProfile getPublicClubById(Long id) {
+        ClubProfile profile = clubProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("ClubProfile", id.toString()));
+        return ClubProfileDto.PublicProfile.fromEntity(profile);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "clubById", key = "#id")
     public ClubProfileDto getClubById(Long id) {
         ClubProfile profile = clubProfileRepository.findById(id)
@@ -66,6 +79,11 @@ public class ClubProfileServiceImpl implements ClubProfileService {
         profile.setClubName(request.getClubName());
         profile.setLogoUrl(request.getLogoUrl());
         profile.setCityCountry(request.getCityCountry());
+        profile.setContactPhone(request.getContactPhone());
+        profile.setWebsiteOrPageUrl(request.getWebsiteOrPageUrl());
+        profile.setDescription(request.getDescription());
+        profile.setLeagueLevel(request.getLeagueLevel());
+        if (request.getActivelyRecruiting() != null) profile.setActivelyRecruiting(request.getActivelyRecruiting());
 
         ClubProfile saved = clubProfileRepository.save(profile);
         return ClubProfileDto.fromEntity(saved);

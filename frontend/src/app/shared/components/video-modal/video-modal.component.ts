@@ -1,6 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+
+export interface VideoItem {
+  rawUrl: string;
+  youtubeId: string | null;
+  thumbnailUrl: string | null;
+  label: string;
+  type: 'youtube' | 'drive' | 'vimeo' | 'direct' | 'hosted' | 'unknown';
+}
 
 @Component({
   selector: 'app-video-modal',
@@ -20,100 +29,183 @@ export class VideoModalComponent implements OnChanges {
   public isDirectVideo: boolean = false;
   public selectedIndex = 0;
   public currentRawUrl: string = '';
-  public activeVideoList: string[] = [];
+  public videoItems: VideoItem[] = [];
+  public get activeVideoList(): string[] { return this.videoItems.map(item => item.rawUrl); }
 
-  constructor(private sanitizer: DomSanitizer) {}
+  // Poster (thumbnail) shown before play
+  public showPoster = true;
+  public currentThumbnail: string | null = null;
+
+  constructor(private sanitizer: DomSanitizer, private http: HttpClient) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.buildActiveList();
-    if (this.activeVideoList.length > 0) {
+    if (changes['isOpen'] && this.isOpen) {
+      this.showPoster = true;
+    }
+    this.buildVideoItems();
+    if (this.videoItems.length > 0) {
       this.selectVideo(0);
     } else {
       this.currentRawUrl = '';
       this.safeEmbedUrl = null;
       this.isDirectVideo = false;
+      this.currentThumbnail = null;
     }
   }
 
   public selectVideo(index: number): void {
     this.selectedIndex = index;
-    if (this.activeVideoList && this.activeVideoList[index]) {
-      this.processVideoUrl(this.activeVideoList[index]);
+    this.showPoster = true;
+    const item = this.videoItems[index];
+    if (item) {
+      this.currentRawUrl = item.rawUrl;
+      this.currentThumbnail = item.thumbnailUrl;
+      if (item.type === 'hosted') {
+        const key = item.rawUrl.substring('platform-video:'.length);
+        this.safeEmbedUrl = null;
+        this.isDirectVideo = false;
+        this.http.get<{ success: boolean; data: string }>(`/api/v1/players/videos/${key}`).subscribe({
+          next: (res) => { if (this.selectedIndex === index && res.success) this.currentRawUrl = res.data; },
+          error: () => { this.currentRawUrl = ''; }
+        });
+      } else {
+        this.processVideoItem(item);
+      }
     }
+  }
+
+  public playVideo(): void {
+    this.showPoster = false;
   }
 
   public closeModal(): void {
+    this.showPoster = true;
     this.close.emit();
   }
 
-  private buildActiveList(): void {
-    const list: string[] = [];
+  // ── Build de-duplicated list with metadata ──
+  private buildVideoItems(): void {
+    const items: VideoItem[] = [];
+
+    const rawList: string[] = [];
+
     if (this.videoUrls && this.videoUrls.length > 0) {
-      for (const u of this.videoUrls) {
-        if (u && u.trim().length > 0 && !list.includes(u.trim())) {
-          list.push(u.trim());
-        }
-      }
+      rawList.push(...this.videoUrls);
     }
-    if (list.length === 0 && this.videoUrl && this.videoUrl.trim().length > 0) {
-      list.push(this.videoUrl.trim());
+    if (rawList.length === 0 && this.videoUrl?.trim()) {
+      rawList.push(this.videoUrl.trim());
     }
-    this.activeVideoList = list;
+
+    let counter = 1;
+    for (const u of rawList) {
+      if (!u?.trim()) continue;
+      const trimmed = u.trim();
+      items.push(this.parseVideoItem(trimmed, counter++));
+    }
+
+    this.videoItems = items;
   }
 
-  private processVideoUrl(url: string): void {
-    if (!url) return;
-    this.currentRawUrl = url.trim();
-
-    // 1. YouTube check (includes watch?v=, Shorts, embed/, live/, youtu.be/)
-    const ytMatch = this.currentRawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i);
-    if (ytMatch && ytMatch[1]) {
-      const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&modestbranding=1&controls=1&showinfo=0&iv_load_policy=3&disablekb=0`;
-      this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-      this.isDirectVideo = false;
-      return;
+  private parseVideoItem(url: string, idx: number): VideoItem {
+    if (url.startsWith('platform-video:')) {
+      return { rawUrl: url, youtubeId: null, thumbnailUrl: null, label: `مقطع ${idx}`, type: 'hosted' };
+    }
+    if (url.startsWith('platform-video:')) {
+      return { rawUrl: url, youtubeId: null, thumbnailUrl: null, label: `مقطع ${idx}`, type: 'hosted' };
+    }
+    // ── YouTube ──
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i);
+    if (ytMatch?.[1]) {
+      const id = ytMatch[1];
+      return {
+        rawUrl: url,
+        youtubeId: id,
+        thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        label: `مقطع ${idx}`,
+        type: 'youtube'
+      };
     }
 
-    // 2. Google Drive check: drive.google.com/file/d/{FILE_ID}/...
-    const driveMatch = this.currentRawUrl.match(/drive\.google\.com\/file\/d\/([\w-]+)/i);
-    if (driveMatch && driveMatch[1]) {
-      const embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-      this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-      this.isDirectVideo = false;
-      return;
+    // ── Google Drive ──
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/i);
+    if (driveMatch?.[1]) {
+      return {
+        rawUrl: url,
+        youtubeId: null,
+        thumbnailUrl: null,
+        label: `مقطع ${idx}`,
+        type: 'drive'
+      };
     }
 
-    // 3. Vimeo check
-    const vimeoMatch = this.currentRawUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
-    if (vimeoMatch && vimeoMatch[1]) {
-      const embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
-      this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-      this.isDirectVideo = false;
-      return;
+    // ── Vimeo ──
+    const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+    if (vimeoMatch?.[1]) {
+      return {
+        rawUrl: url,
+        youtubeId: null,
+        thumbnailUrl: null,
+        label: `مقطع ${idx}`,
+        type: 'vimeo'
+      };
     }
 
-    // 4. Direct MP4 / WebM / OGG / MOV video check
-    const lowerUrl = this.currentRawUrl.toLowerCase();
-    if (
-      lowerUrl.endsWith('.mp4') ||
-      lowerUrl.endsWith('.webm') ||
-      lowerUrl.endsWith('.ogg') ||
-      lowerUrl.endsWith('.mov') ||
-      lowerUrl.endsWith('.m4v') ||
-      lowerUrl.includes('.mp4?') ||
-      lowerUrl.startsWith('data:video/')
-    ) {
-      this.isDirectVideo = true;
-      this.safeEmbedUrl = null;
-      return;
+    // ── Direct MP4 etc ──
+    const lower = url.toLowerCase();
+    if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/.test(lower) || lower.startsWith('data:video/')) {
+      return {
+        rawUrl: url,
+        youtubeId: null,
+        thumbnailUrl: null,
+        label: `مقطع ${idx}`,
+        type: 'direct'
+      };
     }
 
-    // 5. Fallback: Embed as sanitized resource URL if valid URL format
+    return {
+      rawUrl: url,
+      youtubeId: null,
+      thumbnailUrl: null,
+      label: `مقطع ${idx}`,
+      type: 'unknown'
+    };
+  }
+
+  private processVideoItem(item: VideoItem): void {
     this.isDirectVideo = false;
-    if (this.currentRawUrl.startsWith('http://') || this.currentRawUrl.startsWith('https://')) {
-      this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.currentRawUrl);
-    } else {
-      this.safeEmbedUrl = null;
+    this.safeEmbedUrl = null;
+
+    switch (item.type) {
+      case 'youtube': {
+        // Use youtube-nocookie.com for privacy + hide all branding
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${item.youtubeId}`
+          + `?autoplay=1&rel=0&controls=1&showinfo=0`
+          + `&iv_load_policy=3&disablekb=0&fs=1&playsinline=1&color=white`
+          + `&enablejsapi=0&origin=${encodeURIComponent(window.location.origin)}`;
+        this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+        break;
+      }
+      case 'drive': {
+        const id = item.rawUrl.match(/drive\.google\.com\/file\/d\/([\w-]+)/i)?.[1];
+        const embedUrl = `https://drive.google.com/file/d/${id}/preview?usp=sharing`;
+        this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+        break;
+      }
+      case 'vimeo': {
+        const id = item.rawUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i)?.[1];
+        const embedUrl = `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0&color=C9974A`;
+        this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+        break;
+      }
+      case 'direct': {
+        this.isDirectVideo = true;
+        break;
+      }
+      default: {
+        if (item.rawUrl.startsWith('http')) {
+          this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(item.rawUrl);
+        }
+      }
     }
   }
 }

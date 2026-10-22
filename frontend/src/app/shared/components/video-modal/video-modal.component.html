@@ -1,81 +1,190 @@
 @if (isOpen) {
-  <div class="modal-backdrop" (click)="closeModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fa-solid fa-circle-play text-primary"></i>
-          <span>فيديوهات مهارات اللاعب: <strong>{{ playerName }}</strong></span>
+  <div class="video-backdrop" (click)="closeModal()">
+    <div class="video-modal-shell" (click)="$event.stopPropagation()">
+
+      <!-- ══ Header ══ -->
+      <div class="vm-header">
+        <div class="vm-title">
+          <span class="vm-brand">
+            <i class="fa-solid fa-shield-halved"></i>
+            المشغّل الحصري
+          </span>
+          <span class="vm-player-name">{{ playerName }}</span>
         </div>
-        <button (click)="closeModal()" class="btn-close" title="إغلاق">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <div class="vm-header-actions">
+          @if (videoItems.length > 0) {
+            <span class="vm-count-badge">
+              <i class="fa-solid fa-film"></i>
+              {{ videoItems.length }} مقطع{{ videoItems.length > 1 ? '' : '' }}
+            </span>
+          }
+          <button class="vm-close-btn" (click)="closeModal()" title="إغلاق">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Video Playlist Selector Tabs if multiple videos exist -->
-      @if (activeVideoList && activeVideoList.length > 1) {
-        <div class="video-playlist-tabs p-2 d-flex gap-2 bg-dark flex-wrap">
-          @for (vid of activeVideoList; track $index) {
-            <button 
-              type="button" 
-              (click)="selectVideo($index)" 
-              [class.btn-primary]="selectedIndex === $index"
-              [class.btn-outline]="$index !== selectedIndex"
-              class="btn btn-xs flex-grow-1"
-            >
-              <i class="fa-solid fa-film"></i> فيديو {{ $index + 1 }}
-            </button>
-          }
+      <!-- ══ Player Area ══ -->
+      <div class="vm-player-area">
+
+        <!-- ── Empty State ── -->
+        @if (videoItems.length === 0) {
+          <div class="vm-empty-state">
+            <div class="vm-empty-icon">
+              <i class="fa-solid fa-clapperboard"></i>
+            </div>
+            <h3>لم تُضَف مقاطع فيديو بعد</h3>
+            <p>لم يقم اللاعب <strong>{{ playerName }}</strong> بإضافة مقاطع مهاراته حتى الآن.</p>
+          </div>
+
+        <!-- ── Poster / Thumbnail (before play) ── -->
+        } @else if (showPoster) {
+          <div class="vm-poster" (click)="playVideo()">
+
+            <!-- YouTube thumbnail poster -->
+            @if (currentThumbnail) {
+              <img
+                [src]="currentThumbnail"
+                [alt]="playerName"
+                class="vm-poster-img"
+                (error)="$any($event.target).src=''"
+              />
+              <div class="vm-poster-gradient"></div>
+            } @else {
+              <div class="vm-poster-fallback">
+                <div class="vm-poster-fallback-icon">
+                  <i class="fa-solid fa-clapperboard"></i>
+                </div>
+              </div>
+            }
+
+            <!-- Play button overlay -->
+            <div class="vm-play-overlay">
+              <div class="vm-play-btn-wrap">
+                <div class="vm-play-btn">
+                  <i class="fa-solid fa-play"></i>
+                </div>
+                <span class="vm-play-label">
+                  اضغط لتشغيل المقطع
+                  @if (videoItems[selectedIndex]?.type === 'youtube') {
+                    <span class="vm-source-tag">YouTube</span>
+                  }
+                </span>
+              </div>
+              <div class="vm-platform-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                عرض منصة المواهب — محتوى حصري
+              </div>
+            </div>
+          </div>
+
+        <!-- ── Direct MP4 Player ── -->
+        } @else if (isDirectVideo) {
+          <div class="vm-player-wrapper">
+            <video
+              [src]="currentRawUrl"
+              controls
+              autoplay
+              controlsList="nodownload nofullscreen"
+              class="vm-video-element"
+              preload="metadata"
+            ></video>
+            <!-- Platform overlay top-left -->
+            <div class="vm-platform-overlay">
+              <i class="fa-solid fa-shield-halved"></i> منصة المواهب
+            </div>
+          </div>
+
+        <!-- ── Iframe (YouTube / Drive / Vimeo) ── -->
+        } @else if (safeEmbedUrl) {
+          <div class="vm-player-wrapper">
+            <iframe
+              [src]="safeEmbedUrl"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              class="vm-iframe"
+            ></iframe>
+            <!-- Blockers over YouTube logo / related thumbnails -->
+            <div class="vm-block-tl"></div>  <!-- top-left logo -->
+            <div class="vm-block-tr"></div>  <!-- top-right title -->
+            <div class="vm-block-br"></div>  <!-- bottom-right watermark -->
+            <!-- Platform overlay -->
+            <div class="vm-platform-overlay">
+              <i class="fa-solid fa-shield-halved"></i> منصة المواهب
+            </div>
+          </div>
+
+        <!-- ── Unsupported ── -->
+        } @else {
+          <div class="vm-empty-state">
+            <div class="vm-empty-icon warning">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3>يتعذر تشغيل هذا المقطع</h3>
+            <p>صيغة الرابط غير مدعومة داخل المشغّل.</p>
+          </div>
+        }
+      </div>
+
+      <!-- ══ Playlist Strip (if multiple unique videos) ══ -->
+      @if (videoItems.length > 1) {
+        <div class="vm-playlist">
+          <div class="vm-playlist-label">
+            <i class="fa-solid fa-list"></i> قائمة المقاطع
+          </div>
+          <div class="vm-playlist-strip">
+            @for (item of videoItems; track $index) {
+              <button
+                class="vm-playlist-item"
+                [class.active]="selectedIndex === $index"
+                (click)="selectVideo($index)"
+                type="button"
+              >
+                <!-- Thumbnail -->
+                <div class="vm-playlist-thumb">
+                  @if (item.thumbnailUrl) {
+                    <img [src]="item.thumbnailUrl" [alt]="item.label"
+                         (error)="$any($event.target).parentElement.classList.add('no-thumb')" />
+                  } @else {
+                    <i class="fa-solid fa-film"></i>
+                  }
+                  @if (selectedIndex === $index) {
+                    <div class="vm-playlist-playing">
+                      <i class="fa-solid fa-volume-high"></i>
+                    </div>
+                  }
+                </div>
+                <!-- Label -->
+                <div class="vm-playlist-info">
+                  <span class="vm-playlist-name">{{ item.label }}</span>
+                  <span class="vm-playlist-type">
+                    @if (item.type === 'youtube') { <i class="fa-brands fa-youtube"></i> }
+                    @else if (item.type === 'drive') { <i class="fa-brands fa-google-drive"></i> }
+                    @else if (item.type === 'vimeo') { <i class="fa-brands fa-vimeo"></i> }
+                    @else { <i class="fa-solid fa-file-video"></i> }
+                    {{ item.type === 'youtube' ? 'يوتيوب' : item.type === 'direct' ? 'رفع مباشر' : item.type }}
+                  </span>
+                </div>
+              </button>
+            }
+          </div>
         </div>
       }
 
-      <div class="modal-body">
-        @if (activeVideoList.length > 0 && (isDirectVideo || safeEmbedUrl)) {
-          <div class="platform-watermark-overlay">
-            <i class="fa-solid fa-shield-halved text-gold"></i>
-            <span>عرض منصة المواهب</span>
-          </div>
-        }
-
-        @if (activeVideoList.length === 0) {
-
-          <div class="no-video py-5 text-center">
-            <i class="fa-solid fa-video-slash text-gold fa-3x mb-3"></i>
-            <h3 class="text-light fs-5">لم يتم إضافة فيديوهات مهارات بعد</h3>
-            <p class="text-muted small">لم يقم اللاعب <strong>{{ playerName }}</strong> برفع أو إضافة أي رابط فيديو لمهاراته حتى الآن.</p>
-          </div>
-        } @else if (isDirectVideo) {
-          <video [src]="currentRawUrl" controls autoplay controlsList="nodownload" class="video-element"></video>
-        } @else if (safeEmbedUrl) {
-          <iframe [src]="safeEmbedUrl" 
-                  frameborder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowfullscreen 
-                  class="iframe-element">
-          </iframe>
-          <!-- Cover YouTube/external platform branding -->
-          <div class="brand-blocker-top-left"></div>
-          <div class="brand-blocker-bottom-left"></div>
-        } @else {
-          <div class="no-video py-5 text-center">
-            <i class="fa-solid fa-triangle-exclamation text-gold fa-3x mb-3"></i>
-            <p class="text-light fs-5 mb-2">يتعذر تشغيل هذا المقطع مباشرة داخل النافذة.</p>
-          </div>
-        }
-      </div>
-
-      <div class="modal-footer d-flex justify-content-between align-items-center p-2 px-3 bg-dark border-top border-secondary">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge badge-player">
-            <i class="fa-solid fa-shield-halved text-gold me-1"></i> المشغل الحصري للمنصة
-          </span>
-          <span class="text-muted small">عرض مهارات اللاعب بدون روابط خارجية</span>
+      <!-- ══ Footer ══ -->
+      <div class="vm-footer">
+        <div class="vm-footer-brand">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>مشغّل المواهب الحصري — محمي بموجب سياسة المنصة</span>
         </div>
         @if (isDirectVideo && currentRawUrl) {
           <a [href]="currentRawUrl" download class="btn btn-primary btn-xs">
-            <i class="fa-solid fa-download"></i> تحميل مقطع الفيديو
+            <i class="fa-solid fa-download"></i> تحميل
           </a>
         }
       </div>
+
     </div>
   </div>
 }

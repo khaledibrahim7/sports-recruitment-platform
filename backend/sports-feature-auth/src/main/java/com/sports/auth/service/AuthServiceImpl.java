@@ -36,6 +36,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (!request.isTermsAccepted()) {
+            throw new IllegalArgumentException("Terms and privacy consent is required");
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User", "email", request.getEmail());
         }
@@ -50,6 +53,9 @@ public class AuthServiceImpl implements AuthService {
                 request.getRole(),
                 name
         );
+        user.setTermsAccepted(request.isTermsAccepted());
+        user.setTermsVersion("2026-10");
+        user.setTermsAcceptedAt(java.time.Instant.now());
 
         User savedUser = userRepository.save(user);
 

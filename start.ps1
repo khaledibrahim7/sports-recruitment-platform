@@ -9,6 +9,19 @@ Write-Host "   منصة الكورة لعبتنا — تشغيل المنصة  "
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# تحميل إعدادات R2 المحلية من .env (الملف مستبعد من Git)
+$scriptDir = $PSScriptRoot
+$localEnvFile = Join-Path $scriptDir ".env"
+if (Test-Path $localEnvFile) {
+    $allowedStorageKeys = @('VIDEO_S3_BUCKET', 'VIDEO_S3_ENDPOINT', 'VIDEO_S3_REGION', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'VIDEO_S3_URL_TTL')
+    foreach ($line in Get-Content $localEnvFile) {
+        if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$' -and $allowedStorageKeys -contains $matches[1]) {
+            $value = $matches[2].Trim('"', "'")
+            Set-Item -Path "Env:$($matches[1])" -Value $value
+        }
+    }
+}
+
 # ── 1. تحميل Environment Variables ──────────────────────────
 $env:SERVER_PORT        = "8080"
 $env:DB_HOST            = "localhost"
@@ -41,7 +54,6 @@ if ($existing) {
 }
 
 # ── 3. مسار الـ JAR ─────────────────────────────────────────
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $jarPath   = Join-Path $scriptDir "backend\sports-web\target\sports-web-1.0.0.jar"
 $frontendPath = Join-Path $scriptDir "frontend"
 

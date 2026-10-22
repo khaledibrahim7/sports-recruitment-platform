@@ -13,8 +13,8 @@
     <div class="glass-card filter-card">
       <div class="filter-grid">
         <div class="form-group">
-          <label><i class="fa-solid fa-magnifying-glass"></i> البحث باسم اللاعب</label>
-          <input type="text" [(ngModel)]="searchQuery" placeholder="أدخل اسم اللاعب..." class="form-control" />
+          <label><i class="fa-solid fa-magnifying-glass"></i> البحث بالاسم أو النبذة</label>
+          <input type="search" [(ngModel)]="searchQuery" placeholder="اسم اللاعب أو كلمات من نبذته..." class="form-control" />
         </div>
 
         <div class="form-group">
@@ -48,6 +48,15 @@
       <div class="loading-spinner text-center py-5">
         <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
         <p class="mt-2 text-muted">جاري تحميل السجلات الفنية للاعبين...</p>
+      </div>
+    } @else if (loadError) {
+      <div class="empty-state-wrapper" role="alert">
+        <div class="empty-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3 class="empty-title">تعذر تحميل دليل اللاعبين</h3>
+        <p class="empty-desc">{{ loadError }}</p>
+        <button (click)="loadPlayers()" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+        </button>
       </div>
     } @else if (filteredPlayers.length === 0) {
       <div class="empty-state-wrapper">
@@ -182,11 +191,11 @@
                 <span class="lbl">سنة</span>
               </div>
               <div class="stat">
-                <span class="val">{{ player.heightCm || 175 }}</span>
+                <span class="val">{{ player.heightCm ?? '—' }}</span>
                 <span class="lbl">سم</span>
               </div>
               <div class="stat">
-                <span class="val">{{ player.weightKg || 70 }}</span>
+                <span class="val">{{ player.weightKg ?? '—' }}</span>
                 <span class="lbl">كجم</span>
               </div>
             </div>
@@ -216,6 +225,20 @@
           </div>
         }
       </div>
+      @if (totalPlayers > 0) {
+        <div class="directory-pagination mt-4" aria-label="صفحات دليل اللاعبين">
+          <span>عرض {{ players.length }} من {{ totalPlayers }} لاعب</span>
+          <div class="d-flex gap-2 align-items-center">
+            <button class="btn btn-outline btn-sm" [disabled]="currentPage === 0 || isLoading" (click)="changePage(currentPage - 1)">
+              السابق
+            </button>
+            <span>صفحة {{ currentPage + 1 }} من {{ totalPages }}</span>
+            <button class="btn btn-outline btn-sm" [disabled]="currentPage + 1 >= totalPages || isLoading" (click)="changePage(currentPage + 1)">
+              التالي
+            </button>
+          </div>
+        </div>
+      }
     }
   </div>
 </div>

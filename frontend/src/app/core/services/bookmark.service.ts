@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { ApiResponse, PlayerProfile } from '../models/models';
+import { ApiResponse, PublicPlayerProfile } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +28,8 @@ export class BookmarkService {
     );
   }
 
-  public getBookmarkedPlayers(): Observable<ApiResponse<PlayerProfile[]>> {
-    return this.http.get<ApiResponse<PlayerProfile[]>>(this.API_URL);
+  public getBookmarkedPlayers(): Observable<ApiResponse<PublicPlayerProfile[]>> {
+    return this.http.get<ApiResponse<PublicPlayerProfile[]>>(this.API_URL);
   }
 
   public loadBookmarkedIds(): void {

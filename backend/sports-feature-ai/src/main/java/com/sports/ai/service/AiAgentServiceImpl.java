@@ -127,12 +127,12 @@ public class AiAgentServiceImpl implements AiAgentService {
                 sb.append("• ").append(p.getFullName())
                   .append(" | ").append(p.getAge()).append(" سنة")
                   .append(" | مركز: ").append(p.getPosition())
-                  .append(" | سرعة:").append(safe(p.getPace(), 75))
-                  .append(" تسديد:").append(safe(p.getShooting(), 70))
-                  .append(" تمرير:").append(safe(p.getPassing(), 70))
-                  .append(" مراوغة:").append(safe(p.getDribbling(), 75))
-                  .append(" دفاع:").append(safe(p.getDefending(), 65))
-                  .append(" بدنية:").append(safe(p.getPhysicality(), 70))
+                  .append(" | سرعة:").append(metric(p.getPace()))
+                  .append(" تسديد:").append(metric(p.getShooting()))
+                  .append(" تمرير:").append(metric(p.getPassing()))
+                  .append(" مراوغة:").append(metric(p.getDribbling()))
+                  .append(" دفاع:").append(metric(p.getDefending()))
+                  .append(" بدنية:").append(metric(p.getPhysicality()))
                   .append("\n");
             }
         }
@@ -149,12 +149,12 @@ public class AiAgentServiceImpl implements AiAgentService {
             أنشئ تقرير تكشيف رياضي شامل ومهني للاعب التالي:
 
             ━━ البيانات الشخصية ━━
-            الاسم: %s | العمر: %d سنة | المركز: %s
-            الطول: %d سم | الوزن: %d كجم | القدم: %s
+            الاسم: %s | العمر: %s سنة | المركز: %s
+            الطول: %s | الوزن: %s | القدم: %s
 
             ━━ مؤشرات الأداء (من 99) ━━
-            السرعة: %d | التسديد: %d | التمرير: %d
-            المراوغة: %d | الدفاع: %d | القوة البدنية: %d
+            السرعة: %s | التسديد: %s | التمرير: %s
+            المراوغة: %s | الدفاع: %s | القوة البدنية: %s
 
             ━━ النبذة ━━
             %s
@@ -168,17 +168,17 @@ public class AiAgentServiceImpl implements AiAgentService {
             ⑥ توصية التكشيف النهائية: مناسب للاستقطاب أم لا؟ ولماذا؟
             """.formatted(
                 p.getFullName(),
-                p.getAge() != null ? p.getAge() : 18,
+                p.getAge() != null ? p.getAge() : "غير متاح",
                 p.getPosition(),
-                safe(p.getHeightCm(), 175),
-                safe(p.getWeightKg(), 70),
+                metric(p.getHeightCm(), "سم"),
+                metric(p.getWeightKg(), "كجم"),
                 p.getPreferredFoot() != null ? p.getPreferredFoot() : "RIGHT",
-                safe(p.getPace(), 75),
-                safe(p.getShooting(), 70),
-                safe(p.getPassing(), 70),
-                safe(p.getDribbling(), 75),
-                safe(p.getDefending(), 65),
-                safe(p.getPhysicality(), 70),
+                metric(p.getPace()),
+                metric(p.getShooting()),
+                metric(p.getPassing()),
+                metric(p.getDribbling()),
+                metric(p.getDefending()),
+                metric(p.getPhysicality()),
                 p.getBio() != null ? p.getBio() : "لا توجد نبذة مدخلة"
         );
     }
@@ -190,15 +190,15 @@ public class AiAgentServiceImpl implements AiAgentService {
         sb.append("اللاعبون المتاحون في المنصة:\n");
 
         for (PlayerProfileDto p : players) {
-            sb.append("• %s | %d سنة | %s | سرعة:%d تسديد:%d تمرير:%d مراوغة:%d\n"
+            sb.append("• %s | %s سنة | %s | سرعة:%s تسديد:%s تمرير:%s مراوغة:%s\n"
                 .formatted(
                     p.getFullName(),
-                    p.getAge() != null ? p.getAge() : 18,
+                    p.getAge() != null ? p.getAge() : "غير متاح",
                     p.getPosition(),
-                    safe(p.getPace(), 75),
-                    safe(p.getShooting(), 70),
-                    safe(p.getPassing(), 70),
-                    safe(p.getDribbling(), 75)
+                    metric(p.getPace()),
+                    metric(p.getShooting()),
+                    metric(p.getPassing()),
+                    metric(p.getDribbling())
                 ));
         }
 
@@ -259,8 +259,12 @@ public class AiAgentServiceImpl implements AiAgentService {
     // Utilities
     // ─────────────────────────────────────────────────────────────
 
-    private int safe(Integer value, int defaultVal) {
-        return value != null ? value : defaultVal;
+    private String metric(Integer value) {
+        return value != null ? value.toString() : "غير متاح";
+    }
+
+    private String metric(Integer value, String unit) {
+        return value != null ? value + " " + unit : "غير متاح";
     }
 
     private String fallback(String message) {

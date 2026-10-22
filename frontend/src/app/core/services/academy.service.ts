@@ -19,6 +19,10 @@ export class AcademyService {
     return this.http.get<ApiResponse<AcademyProfile>>(`${this.API_URL}/${id}`);
   }
 
+  public getMyProfile(): Observable<ApiResponse<AcademyProfile>> {
+    return this.http.get<ApiResponse<AcademyProfile>>(`${this.API_URL}/me`);
+  }
+
   public updateMyProfile(payload: any): Observable<ApiResponse<AcademyProfile>> {
     return this.http.put<ApiResponse<AcademyProfile>>(`${this.API_URL}/me`, payload);
   }

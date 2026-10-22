@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface ClubProfileService {
     List<ClubProfileDto> getAllClubs();
+    List<ClubProfileDto.PublicProfile> getPublicClubs();
     ClubProfileDto getClubById(Long id);
+    ClubProfileDto.PublicProfile getPublicClubById(Long id);
     ClubProfileDto getClubByUserId(Long userId);
     ClubProfileDto createOrUpdateProfile(Long userId, ClubProfileUpdateRequest request);
 }

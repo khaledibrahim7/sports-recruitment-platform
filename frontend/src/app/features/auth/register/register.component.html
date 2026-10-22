@@ -1,98 +1,410 @@
 <div class="auth-container">
   <div class="glass-card auth-card">
     <div class="auth-header text-center">
-      <h2>إنشاء حساب جديد في المنصة</h2>
-      <p>اختر نوع الحساب وأدخل البريد والكلمة للانضمام الفوري</p>
+      <h2>إنشاء حساب احترافي</h2>
+      <p>أنشئ حسابك وابدأ ملفك الرياضي بخطوات واضحة وآمنة</p>
     </div>
 
-    <!-- Interactive 3 Role Selector Tabs -->
-    <div class="role-selector-tabs mb-4">
-      <button 
-        type="button" 
-        [class.active]="selectedRole === 'PLAYER'" 
-        (click)="selectRole('PLAYER')"
-        class="role-tab player"
-      >
-        <i class="fa-solid fa-person-running"></i>
-        <span>لاعب</span>
+    <!-- Role Selector -->
+    <div class="role-selector-tabs mb-4" aria-label="نوع الحساب">
+      <button type="button" [class.active]="selectedRole === 'PLAYER'" (click)="selectRole('PLAYER')" class="role-tab player">
+        <i class="fa-solid fa-person-running"></i><span>لاعب</span>
       </button>
-
-      <button 
-        type="button" 
-        [class.active]="selectedRole === 'ACADEMY'" 
-        (click)="selectRole('ACADEMY')"
-        class="role-tab academy"
-      >
-        <i class="fa-solid fa-graduation-cap"></i>
-        <span>أكاديمية</span>
+      <button type="button" [class.active]="selectedRole === 'ACADEMY'" (click)="selectRole('ACADEMY')" class="role-tab academy">
+        <i class="fa-solid fa-graduation-cap"></i><span>أكاديمية</span>
       </button>
-
-      <button 
-        type="button" 
-        [class.active]="selectedRole === 'CLUB'" 
-        (click)="selectRole('CLUB')"
-        class="role-tab club"
-      >
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>نادي</span>
+      <button type="button" [class.active]="selectedRole === 'CLUB'" (click)="selectRole('CLUB')" class="role-tab club">
+        <i class="fa-solid fa-shield-halved"></i><span>نادي</span>
       </button>
     </div>
 
-    @if (errorMessage) {
-      <div class="alert alert-danger mb-3">
-        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+    <!-- Player Progress Steps -->
+    @if (selectedRole === 'PLAYER') {
+      <div class="registration-progress" aria-label="خطوات التسجيل">
+        <div class="progress-step" [class.active]="step === 1" [class.complete]="step === 2"><span>1</span><strong>بيانات اللاعب</strong></div>
+        <div class="progress-line" [class.complete]="step === 2"></div>
+        <div class="progress-step" [class.active]="step === 2"><span>2</span><strong>الحساب والموافقة</strong></div>
       </div>
     }
 
-    <form (ngSubmit)="onSubmit()" class="auth-form">
-      <div class="form-group">
-        <label for="email">البريد الإلكتروني *</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          [(ngModel)]="email" 
-          required 
-          placeholder="your.email@domain.com"
-          class="form-control"
-        />
-      </div>
+    @if (errorMessage) {
+      <div class="alert alert-danger mb-3" role="alert"><i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}</div>
+    }
 
-      <div class="grid-2 mt-3">
-        <div class="form-group">
-          <label for="password">كلمة المرور *</label>
-          <input 
-            type="password" 
-            id="password" 
-            name="password" 
-            [(ngModel)]="password" 
-            required 
-            placeholder="••••••••"
-            class="form-control"
-          />
-        </div>
+    <form (ngSubmit)="onSubmit()" class="auth-form" #registerForm="ngForm">
 
-        <div class="form-group">
-          <label for="confirmPassword">تأكيد كلمة المرور *</label>
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            name="confirmPassword" 
-            [(ngModel)]="confirmPassword" 
-            required 
-            placeholder="••••••••"
-            class="form-control"
-          />
-        </div>
-      </div>
+      <!-- ══════════════════════════════════════
+           PLAYER — Step 1: Sport Data
+      ══════════════════════════════════════ -->
+      @if (selectedRole !== 'PLAYER' || step === 1) {
+        @if (selectedRole === 'PLAYER') {
+          <div class="registration-section-heading">
+            <i class="fa-solid fa-futbol"></i>
+            <div><h3>بياناتك الرياضية</h3><p>المعلومات الأساسية التي تساعد الكشافين في العثور عليك</p></div>
+          </div>
 
-      <button type="submit" [disabled]="isLoading" class="btn btn-primary btn-lg w-100 mt-4">
-        @if (isLoading) {
-          <i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء الحساب...
+          <!-- Birth date & Nationality -->
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="birthDate">تاريخ الميلاد <span class="required-mark">*</span></label>
+              <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate"
+                     [min]="minBirthDate" [max]="maxBirthDate" required autocomplete="bday" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="nationality">الجنسية <span class="required-mark">*</span></label>
+              <input type="text" id="nationality" name="nationality" [(ngModel)]="nationality"
+                     required maxlength="80" autocomplete="country-name" placeholder="مثال: مصري" class="form-control" />
+            </div>
+          </div>
+
+          <!-- City & Phone -->
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="cityCountry">مدينة ودولة الإقامة <span class="required-mark">*</span></label>
+              <input type="text" id="cityCountry" name="cityCountry" [(ngModel)]="cityCountry"
+                     required maxlength="120" autocomplete="address-level2" placeholder="مثال: القاهرة، مصر" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="phone">رقم الهاتف مع رمز الدولة <span class="required-mark">*</span></label>
+              <input type="tel" id="phone" name="phone" [(ngModel)]="phone"
+                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
+                     placeholder="مثال: +20 100 000 0000" class="form-control" />
+            </div>
+          </div>
+
+          @if (isMinor()) {
+            <div class="registration-section-heading mt-4">
+              <i class="fa-solid fa-user-shield"></i>
+              <div><h3>بيانات ولي الأمر</h3><p>لإنشاء حساب لاعب دون 18 عامًا نحتاج بيانات ولي الأمر وموافقته</p></div>
+            </div>
+            <div class="grid-2 mt-3">
+              <div class="form-group">
+                <label for="guardianName">اسم ولي الأمر *</label>
+                <input id="guardianName" name="guardianName" [(ngModel)]="guardianName" required maxlength="120" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="guardianPhone">هاتف ولي الأمر *</label>
+                <input id="guardianPhone" name="guardianPhone" type="tel" [(ngModel)]="guardianPhone" required minlength="7" maxlength="20" class="form-control" />
+              </div>
+            </div>
+            <label class="consent-row mt-2">
+              <input type="checkbox" name="guardianConsent" [(ngModel)]="guardianConsent" required />
+              <span>أقر بصفتي ولي الأمر بموافقتي على إنشاء الحساب واستخدام اللاعب للمنصة.</span>
+            </label>
+          }
+
+          <!-- Primary & Secondary Position -->
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="position">المركز الأساسي <span class="required-mark">*</span></label>
+              <select id="position" name="position" [(ngModel)]="position" required class="form-select">
+                @for (pos of playerPositions; track pos) {
+                  <option [value]="pos">{{ playerPositionLabels[pos].ar }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="secondaryPosition">مركز بديل</label>
+              <select id="secondaryPosition" name="secondaryPosition" [(ngModel)]="secondaryPosition" class="form-select">
+                <option value="">لا يوجد</option>
+                @for (pos of playerPositions; track pos) {
+                  @if (pos !== position) {
+                    <option [value]="pos">{{ playerPositionLabels[pos].ar }}</option>
+                  }
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Preferred Foot, Height, Weight -->
+          <div class="grid-3 mt-3">
+            <div class="form-group">
+              <label for="preferredFoot">القدم المفضلة <span class="required-mark">*</span></label>
+              <select id="preferredFoot" name="preferredFoot" [(ngModel)]="preferredFoot" required class="form-select">
+                <option value="" disabled>اختر</option>
+                <option value="RIGHT">اليمنى</option>
+                <option value="LEFT">اليسرى</option>
+                <option value="BOTH">كلتاهما</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="heightCm">الطول (سم)</label>
+              <input type="number" id="heightCm" name="heightCm" [(ngModel)]="heightCm"
+                     min="100" max="230" inputmode="numeric" placeholder="مثال: 178" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="weightKg">الوزن (كجم)</label>
+              <input type="number" id="weightKg" name="weightKg" [(ngModel)]="weightKg"
+                     min="30" max="200" inputmode="numeric" placeholder="مثال: 72" class="form-control" />
+            </div>
+          </div>
+
+          <!-- Current Team & Competition Level -->
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="currentTeam">النادي أو الأكاديمية الحالية</label>
+              <input type="text" id="currentTeam" name="currentTeam" [(ngModel)]="currentTeam"
+                     maxlength="120" placeholder="اسم النادي أو الأكاديمية" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="competitionLevel">مستوى المنافسة</label>
+              <select id="competitionLevel" name="competitionLevel" [(ngModel)]="competitionLevel" class="form-select">
+                <option value="">اختر مستوى المنافسة</option>
+                <option value="AMATEUR">هواة</option>
+                <option value="ACADEMY">أكاديميات وناشئين</option>
+                <option value="SEMI_PRO">شبه محترف</option>
+                <option value="PROFESSIONAL">محترف</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- رابط الفيديو -->
+          <div class="form-group mt-3">
+            <label for="videoUrl">رابط فيديو أداء</label>
+            <input type="url" id="videoUrl" name="videoUrl" [(ngModel)]="videoUrl"
+                   maxlength="500" placeholder="YouTube أو Vimeo أو رابط مباشر MP4" class="form-control" />
+          </div>
+
+          <!-- نبذة رياضية -->
+          <div class="form-group mt-3">
+            <label for="bio">نبذة رياضية قصيرة</label>
+            <textarea id="bio" name="bio" [(ngModel)]="bio" maxlength="1000" rows="3"
+                      placeholder="خبرتك الرياضية، إنجازاتك، وما تبحث عنه" class="form-control"></textarea>
+          </div>
+
+          <!-- ── NEW: هدف التسجيل ── -->
+          <div class="form-group mt-3">
+            <label for="playerGoal">هدفك من التسجيل في المنصة <span class="required-mark">*</span></label>
+            <select id="playerGoal" name="playerGoal" [(ngModel)]="playerGoal" required class="form-select">
+              <option value="" disabled>اختر هدفك الرياضي</option>
+              <option value="JOIN_ACADEMY">الانضمام لأكاديمية تدريب</option>
+              <option value="JOIN_SEMI_PRO">الانضمام لنادٍ شبه محترف</option>
+              <option value="JOIN_PRO_CLUB">الانضمام لنادٍ احترافي</option>
+              <option value="TRIAL_OPPORTUNITY">الحصول على فرصة تجريبية (معايشة)</option>
+              <option value="SHOWCASE_PROFILE">عرض ملفي الرياضي للكشافين</option>
+            </select>
+          </div>
+
+          <!-- ── NEW: متاح للانتقال ── -->
+          <div class="toggle-field mt-3">
+            <div class="toggle-field-info">
+              <span class="toggle-field-label">متاح للانتقال أو الانضمام الآن</span>
+              <span class="toggle-field-desc">تفعيل هذا الخيار يجعل ملفك مميزاً أمام الكشافين والأندية</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" name="availableForTransfer" [(ngModel)]="availableForTransfer" />
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+            </label>
+          </div>
+
+          <button type="button" (click)="goToProfileDetails()" class="btn btn-primary btn-lg w-100 mt-4">
+            متابعة إلى بيانات الحساب <i class="fa-solid fa-arrow-left"></i>
+          </button>
+
+        <!-- ══════════════════════════════════════
+             ACADEMY Fields
+        ══════════════════════════════════════ -->
+        } @else if (selectedRole === 'ACADEMY') {
+          <div class="registration-section-heading">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <div><h3>بيانات الأكاديمية</h3><p>أدخل البيانات الرسمية لأكاديميتك الرياضية</p></div>
+          </div>
+
+          <div class="form-group">
+            <label for="organizationName">اسم الأكاديمية الرسمي <span class="required-mark">*</span></label>
+            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName"
+                   required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
+          </div>
+
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="organizationCity">المقر: المدينة والدولة <span class="required-mark">*</span></label>
+              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity"
+                     required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="organizationPhone">رقم هاتف الأكاديمية <span class="required-mark">*</span></label>
+              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone"
+                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
+                     placeholder="مثال: +20 2 0000 0000" class="form-control" />
+            </div>
+          </div>
+
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="organizationWebsite">الموقع الإلكتروني أو الصفحة الرسمية</label>
+              <input type="url" id="organizationWebsite" name="organizationWebsite" [(ngModel)]="organizationWebsite"
+                     maxlength="500" placeholder="https://example.com" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="academyTrainingType">نوع التدريب المقدَّم</label>
+              <select id="academyTrainingType" name="academyTrainingType" [(ngModel)]="academyTrainingType" class="form-select">
+                <option value="">اختر نوع التدريب</option>
+                <option value="FREE">مجاني</option>
+                <option value="PAID">مدفوع</option>
+                <option value="SCHOLARSHIP">منح دراسية / رياضية</option>
+                <option value="MIXED">مجاني ومدفوع</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ── NEW: الفئات العمرية ── -->
+          <div class="form-group mt-3">
+            <label>الفئات العمرية المقبولة</label>
+            <div class="chip-group">
+              @for (group of ageGroups; track group) {
+                <button type="button"
+                        class="chip"
+                        [class.selected]="isAgeGroupSelected(group)"
+                        (click)="toggleAgeGroup(group)">
+                  {{ group }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label for="organizationDescription">نبذة عن الأكاديمية</label>
+            <textarea id="organizationDescription" name="organizationDescription" [(ngModel)]="organizationDescription"
+                      maxlength="2000" rows="3"
+                      placeholder="الفئات العمرية، التخصصات، ومعلومات تعريفية" class="form-control"></textarea>
+          </div>
+
+        <!-- ══════════════════════════════════════
+             CLUB Fields
+        ══════════════════════════════════════ -->
         } @else {
-          <i class="fa-solid fa-check"></i> تأكيد وإنشاء الحساب
+          <div class="registration-section-heading">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div><h3>بيانات النادي</h3><p>أدخل البيانات الرسمية لناديك الرياضي</p></div>
+          </div>
+
+          <div class="form-group">
+            <label for="organizationName">اسم النادي الرسمي <span class="required-mark">*</span></label>
+            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName"
+                   required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
+          </div>
+
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="organizationCity">المقر: المدينة والدولة <span class="required-mark">*</span></label>
+              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity"
+                     required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="organizationPhone">رقم هاتف النادي <span class="required-mark">*</span></label>
+              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone"
+                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
+                     placeholder="مثال: +20 2 0000 0000" class="form-control" />
+            </div>
+          </div>
+
+          <div class="grid-2 mt-3">
+            <div class="form-group">
+              <label for="clubWebsite">الموقع الإلكتروني أو الصفحة الرسمية</label>
+              <input type="url" id="clubWebsite" name="clubWebsite" [(ngModel)]="clubWebsite"
+                     maxlength="500" placeholder="https://example.com" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="clubLeagueLevel">المستوى التنافسي للنادي</label>
+              <select id="clubLeagueLevel" name="clubLeagueLevel" [(ngModel)]="clubLeagueLevel" class="form-select">
+                <option value="">اختر مستوى المنافسة</option>
+                <option value="YOUTH">شبابي / ناشئين</option>
+                <option value="AMATEUR">هواة</option>
+                <option value="SEMI_PRO">شبه محترف</option>
+                <option value="PROFESSIONAL">محترف / درجة أولى</option>
+                <option value="ELITE">نخبة / دوري ممتاز</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label for="clubDescription">وصف النادي ورؤيته الرياضية</label>
+            <textarea id="clubDescription" name="clubDescription" [(ngModel)]="clubDescription"
+                      maxlength="2000" rows="3"
+                      placeholder="تاريخ النادي، إنجازاته، وما يبحث عنه في اللاعبين" class="form-control"></textarea>
+          </div>
+
+          <!-- ── NEW: يبحث عن لاعبين حالياً ── -->
+          <div class="toggle-field mt-3">
+            <div class="toggle-field-info">
+              <span class="toggle-field-label">النادي يبحث عن لاعبين حالياً</span>
+              <span class="toggle-field-desc">تفعيل هذا الخيار يجعل ناديك يظهر كـ "يبحث عن لاعبين" في دليل الأندية</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" name="clubActivelyRecruiting" [(ngModel)]="clubActivelyRecruiting" />
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+            </label>
+          </div>
         }
-      </button>
+      }
+
+      <!-- ══════════════════════════════════════
+           Account Info (Step 2 for PLAYER, always for ACADEMY/CLUB)
+      ══════════════════════════════════════ -->
+      @if (selectedRole !== 'PLAYER' || step === 2) {
+        <div class="registration-section-heading mt-4">
+          <i class="fa-solid fa-user-lock"></i>
+          <div>
+            <h3>بيانات مسؤول الحساب</h3>
+            <p>بيانات الشخص المخوّل بإدارة حساب {{ selectedRole === 'ACADEMY' ? 'الأكاديمية' : selectedRole === 'CLUB' ? 'النادي' : 'اللاعب' }}</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fullName">الاسم الكامل <span class="required-mark">*</span></label>
+          <input type="text" id="fullName" name="fullName" [(ngModel)]="fullName"
+                 required minlength="3" maxlength="100" autocomplete="name"
+                 placeholder="الاسم الأول واسم العائلة" class="form-control" />
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="email">البريد الإلكتروني <span class="required-mark">*</span></label>
+          <input type="email" id="email" name="email" [(ngModel)]="email"
+                 required maxlength="254" autocomplete="email"
+                 placeholder="name@example.com" class="form-control" />
+        </div>
+
+        <div class="grid-2 mt-3">
+          <div class="form-group">
+            <label for="password">كلمة المرور <span class="required-mark">*</span></label>
+            <input type="password" id="password" name="password" [(ngModel)]="password"
+                   required minlength="8" autocomplete="new-password"
+                   placeholder="8 أحرف على الأقل" class="form-control" />
+            <small class="field-help">استخدم 8 أحرف على الأقل مع حرف ورقم.</small>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">تأكيد كلمة المرور <span class="required-mark">*</span></label>
+            <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword"
+                   required minlength="8" autocomplete="new-password"
+                   placeholder="أعد إدخال كلمة المرور" class="form-control" />
+          </div>
+        </div>
+
+        <label class="consent-row mt-4">
+          <input type="checkbox" name="acceptTerms" [(ngModel)]="acceptTerms" required />
+          <span>أوافق على شروط الاستخدام وسياسة الخصوصية، وأؤكد أن البيانات المقدمة صحيحة.</span>
+        </label>
+
+        <div class="d-flex gap-2 mt-4">
+          @if (selectedRole === 'PLAYER' && step === 2) {
+            <button type="button" (click)="goToAccountDetails()" class="btn btn-outline flex-grow-1">
+              <i class="fa-solid fa-arrow-right"></i> رجوع
+            </button>
+          }
+          <button type="submit" [disabled]="isLoading || registerForm.invalid" class="btn btn-primary btn-lg flex-grow-1">
+            @if (isLoading) {
+              <i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء الحساب...
+            } @else {
+              <i class="fa-solid fa-check"></i> إنشاء الحساب
+            }
+          </button>
+        </div>
+      }
     </form>
 
     <div class="auth-footer text-center mt-4">

@@ -9,6 +9,7 @@ public class AuthResponse {
     private String email;
     private String fullName;
     private Role role;
+    private Object profile;
 
     public AuthResponse(String accessToken, Long userId, String email, String fullName, Role role) {
         this.accessToken = accessToken;
@@ -24,4 +25,6 @@ public class AuthResponse {
     public String getEmail() { return email; }
     public String getFullName() { return fullName; }
     public Role getRole() { return role; }
+    public Object getProfile() { return profile; }
+    public void setProfile(Object profile) { this.profile = profile; }
 }

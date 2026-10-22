@@ -46,6 +46,19 @@
   justify-content: center;
 }
 
+.directory-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
 .player-card {
   padding: 1.25rem 1rem;
   display: flex;

@@ -3,6 +3,8 @@ package com.sports.academy.domain;
 import com.sports.auth.domain.User;
 import com.sports.common.domain.BaseEntity;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "academy_profiles", indexes = {
@@ -24,8 +26,22 @@ public class AcademyProfile extends BaseEntity {
     @Column(name = "website_or_page_url", length = 500)
     private String websiteOrPageUrl;
 
+    @Column(name = "city_country", length = 120)
+    private String cityCountry;
+
+    @Column(name = "contact_phone", length = 20)
+    private String contactPhone;
+
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "academy_age_groups", joinColumns = @JoinColumn(name = "academy_profile_id"))
+    @Column(name = "age_group", length = 40)
+    private List<String> ageGroups = new ArrayList<>();
+
+    @Column(name = "training_type", length = 80)
+    private String trainingType;
 
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
@@ -51,8 +67,17 @@ public class AcademyProfile extends BaseEntity {
     public String getWebsiteOrPageUrl() { return websiteOrPageUrl; }
     public void setWebsiteOrPageUrl(String websiteOrPageUrl) { this.websiteOrPageUrl = websiteOrPageUrl; }
 
+    public String getCityCountry() { return cityCountry; }
+    public void setCityCountry(String cityCountry) { this.cityCountry = cityCountry; }
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public List<String> getAgeGroups() { return ageGroups; }
+    public void setAgeGroups(List<String> ageGroups) { this.ageGroups = ageGroups != null ? new ArrayList<>(ageGroups) : new ArrayList<>(); }
+    public String getTrainingType() { return trainingType; }
+    public void setTrainingType(String trainingType) { this.trainingType = trainingType; }
 
     public String getLogoUrl() { return logoUrl; }
     public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }

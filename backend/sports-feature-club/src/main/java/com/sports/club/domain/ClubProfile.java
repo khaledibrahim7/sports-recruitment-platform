@@ -27,6 +27,21 @@ public class ClubProfile extends BaseEntity {
     @Column(name = "city_country", length = 100)
     private String cityCountry;
 
+    @Column(name = "contact_phone", length = 20)
+    private String contactPhone;
+
+    @Column(name = "website_or_page_url", length = 500)
+    private String websiteOrPageUrl;
+
+    @Column(columnDefinition = "NVARCHAR(MAX)")
+    private String description;
+
+    @Column(name = "league_level", length = 80)
+    private String leagueLevel;
+
+    @Column(name = "actively_recruiting", nullable = false)
+    private boolean activelyRecruiting;
+
     public ClubProfile() {}
 
     public ClubProfile(User user, String clubName, String logoUrl) {
@@ -49,4 +64,14 @@ public class ClubProfile extends BaseEntity {
 
     public String getCityCountry() { return cityCountry; }
     public void setCityCountry(String cityCountry) { this.cityCountry = cityCountry; }
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+    public String getWebsiteOrPageUrl() { return websiteOrPageUrl; }
+    public void setWebsiteOrPageUrl(String websiteOrPageUrl) { this.websiteOrPageUrl = websiteOrPageUrl; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getLeagueLevel() { return leagueLevel; }
+    public void setLeagueLevel(String leagueLevel) { this.leagueLevel = leagueLevel; }
+    public boolean isActivelyRecruiting() { return activelyRecruiting; }
+    public void setActivelyRecruiting(boolean activelyRecruiting) { this.activelyRecruiting = activelyRecruiting; }
 }

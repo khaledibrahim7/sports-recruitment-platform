@@ -39,7 +39,7 @@ export interface AuthResponse {
   fullName: string;
   email: string;
   role: Role;
-  profile?: any;
+  profile?: PlayerProfile | any;
 }
 
 export interface ApiResponse<T> {
@@ -54,10 +54,18 @@ export interface PlayerProfile {
   fullName: string;
   email: string;
   age: number;
+  birthDate?: string;
+  nationality?: string;
+  cityCountry?: string;
+  currentTeam?: string;
+  competitionLevel?: string;
+  playerGoal?: string;
+  availableForTransfer?: boolean;
   position: PlayerPosition;
   secondaryPositions?: PlayerPosition[];
   videoUrl?: string;
   videoUrls?: string[];
+  uploadedVideoUrls?: string[];
   phone?: string;
   bio?: string;
   avatarUrl?: string;
@@ -74,14 +82,28 @@ export interface PlayerProfile {
   physicality?: number;
 }
 
+export type PublicPlayerProfile = Omit<PlayerProfile, 'userId' | 'email' | 'birthDate' | 'nationality' | 'phone' | 'uploadedVideoUrls' | 'availableForTransfer'>;
+
+export interface PlayerSearchPage {
+  items: PublicPlayerProfile[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface AcademyProfile {
   id: number;
   userId: number;
   academyName: string;
   email: string;
   websiteOrPageUrl?: string;
+  cityCountry?: string;
+  contactPhone?: string;
   logoUrl?: string;
   description?: string;
+  ageGroups?: string[];
+  trainingType?: string;
 }
 
 export interface ClubProfile {
@@ -91,6 +113,11 @@ export interface ClubProfile {
   email: string;
   logoUrl?: string;
   cityCountry?: string;
+  contactPhone?: string;
+  websiteOrPageUrl?: string;
+  description?: string;
+  leagueLevel?: string;
+  activelyRecruiting?: boolean;
 }
 
 export interface TrialOffer {

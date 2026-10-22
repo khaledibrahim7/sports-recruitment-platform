@@ -26,24 +26,31 @@ public class ClubProfileController {
 
     @GetMapping
     @Operation(summary = "Get list of all registered sports clubs")
-    public ResponseEntity<ApiResponse<List<ClubProfileDto>>> getAllClubs() {
-        List<ClubProfileDto> clubs = clubProfileService.getAllClubs();
+    public ResponseEntity<ApiResponse<List<ClubProfileDto.PublicProfile>>> getAllClubs() {
+        List<ClubProfileDto.PublicProfile> clubs = clubProfileService.getPublicClubs();
         return ResponseEntity.ok(ApiResponse.ok(clubs));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get club profile by ID")
-    public ResponseEntity<ApiResponse<ClubProfileDto>> getClubById(@PathVariable Long id) {
-        ClubProfileDto club = clubProfileService.getClubById(id);
+    public ResponseEntity<ApiResponse<ClubProfileDto.PublicProfile>> getClubById(@PathVariable Long id) {
+        ClubProfileDto.PublicProfile club = clubProfileService.getPublicClubById(id);
         return ResponseEntity.ok(ApiResponse.ok(club));
     }
 
     @PutMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('CLUB')")
     @Operation(summary = "Update authenticated club's profile")
     public ResponseEntity<ApiResponse<ClubProfileDto>> updateMyProfile(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody ClubProfileUpdateRequest request) {
         ClubProfileDto updated = clubProfileService.createOrUpdateProfile(userPrincipal.getId(), request);
         return ResponseEntity.ok(ApiResponse.ok("Club profile updated successfully", updated));
+    }
+
+    @GetMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('CLUB')")
+    public ResponseEntity<ApiResponse<ClubProfileDto>> getMyProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(clubProfileService.getClubByUserId(principal.getId())));
     }
 }

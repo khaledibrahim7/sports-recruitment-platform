@@ -26,24 +26,31 @@ public class AcademyProfileController {
 
     @GetMapping
     @Operation(summary = "Get list of all registered academies")
-    public ResponseEntity<ApiResponse<List<AcademyProfileDto>>> getAllAcademies() {
-        List<AcademyProfileDto> academies = academyProfileService.getAllAcademies();
+    public ResponseEntity<ApiResponse<List<AcademyProfileDto.PublicProfile>>> getAllAcademies() {
+        List<AcademyProfileDto.PublicProfile> academies = academyProfileService.getPublicAcademies();
         return ResponseEntity.ok(ApiResponse.ok(academies));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get academy profile by ID")
-    public ResponseEntity<ApiResponse<AcademyProfileDto>> getAcademyById(@PathVariable Long id) {
-        AcademyProfileDto academy = academyProfileService.getAcademyById(id);
+    public ResponseEntity<ApiResponse<AcademyProfileDto.PublicProfile>> getAcademyById(@PathVariable Long id) {
+        AcademyProfileDto.PublicProfile academy = academyProfileService.getPublicAcademyById(id);
         return ResponseEntity.ok(ApiResponse.ok(academy));
     }
 
     @PutMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ACADEMY')")
     @Operation(summary = "Update authenticated academy's profile")
     public ResponseEntity<ApiResponse<AcademyProfileDto>> updateMyProfile(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody AcademyProfileUpdateRequest request) {
         AcademyProfileDto updated = academyProfileService.createOrUpdateProfile(userPrincipal.getId(), request);
         return ResponseEntity.ok(ApiResponse.ok("Academy profile updated successfully", updated));
+    }
+
+    @GetMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ACADEMY')")
+    public ResponseEntity<ApiResponse<AcademyProfileDto>> getMyProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(academyProfileService.getAcademyByUserId(principal.getId())));
     }
 }

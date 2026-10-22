@@ -5,7 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlayerService } from '../../core/services/player.service';
 import { AcademyService } from '../../core/services/academy.service';
 import { ClubService } from '../../core/services/club.service';
-import { PlayerPositionLabels, PlayerProfile, AcademyProfile, ClubProfile } from '../../core/models/models';
+import { PlayerPositionLabels, PublicPlayerProfile, AcademyProfile, ClubProfile } from '../../core/models/models';
 import { VideoModalComponent } from '../../shared/components/video-modal/video-modal.component';
 
 @Component({
@@ -26,18 +26,14 @@ export class HomeComponent implements OnInit {
     return user.email ? user.email.split('@')[0] : 'المستخدم';
   });
 
-  public featuredPlayers: PlayerProfile[] = [];
+  public featuredPlayers: PublicPlayerProfile[] = [];
+  public registeredPlayerCount = 0;
   public featuredAcademies: AcademyProfile[] = [];
   public featuredClubs: ClubProfile[] = [];
   public playerPositionLabels = PlayerPositionLabels;
 
-  public get spotlightPlayer(): PlayerProfile | null {
+  public get spotlightPlayer(): PublicPlayerProfile | null {
     return this.featuredPlayers && this.featuredPlayers.length > 0 ? this.featuredPlayers[0] : null;
-  }
-
-  public get totalScoutingOperationsCount(): number {
-    const videoCount = this.featuredPlayers.reduce((acc, p) => acc + (p.videoUrls ? p.videoUrls.length : (p.videoUrl ? 1 : 0)), 0);
-    return this.featuredPlayers.length + videoCount + (this.featuredAcademies.length * 2) + (this.featuredClubs.length * 3);
   }
 
   // Video Modal State
@@ -57,7 +53,7 @@ export class HomeComponent implements OnInit {
     this.loadFeaturedData();
   }
 
-  public openVideo(player: PlayerProfile): void {
+  public openVideo(player: PublicPlayerProfile): void {
     // Pass full videoUrls array - fallback to single videoUrl if no array
     if (player.videoUrls && player.videoUrls.length > 0) {
       this.selectedVideoUrls = player.videoUrls;
@@ -75,8 +71,13 @@ export class HomeComponent implements OnInit {
   }
 
   private loadFeaturedData(): void {
-    this.playerService.getPlayers().subscribe({
-      next: (res) => { if (res.success && res.data) this.featuredPlayers = res.data; },
+    this.playerService.getPlayers('', null, '', 0, 6).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.featuredPlayers = res.data.items;
+          this.registeredPlayerCount = res.data.totalElements;
+        }
+      },
       error: () => {}
     });
 

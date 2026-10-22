@@ -37,6 +37,19 @@ public class AcademyProfileServiceImpl implements AcademyProfileService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<AcademyProfileDto.PublicProfile> getPublicAcademies() {
+        return academyProfileRepository.findAll().stream().map(AcademyProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AcademyProfileDto.PublicProfile getPublicAcademyById(Long id) {
+        AcademyProfile profile = academyProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("AcademyProfile", id.toString()));
+        return AcademyProfileDto.PublicProfile.fromEntity(profile);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "academyById", key = "#id")
     public AcademyProfileDto getAcademyById(Long id) {
         AcademyProfile profile = academyProfileRepository.findById(id)
@@ -65,8 +78,12 @@ public class AcademyProfileServiceImpl implements AcademyProfileService {
         profile.setUser(user);
         profile.setAcademyName(request.getAcademyName());
         profile.setWebsiteOrPageUrl(request.getWebsiteOrPageUrl());
+        profile.setCityCountry(request.getCityCountry());
+        profile.setContactPhone(request.getContactPhone());
         profile.setDescription(request.getDescription());
         profile.setLogoUrl(request.getLogoUrl());
+        if (request.getAgeGroups() != null) profile.setAgeGroups(request.getAgeGroups());
+        if (request.getTrainingType() != null) profile.setTrainingType(request.getTrainingType());
 
         AcademyProfile saved = academyProfileRepository.save(profile);
         return AcademyProfileDto.fromEntity(saved);

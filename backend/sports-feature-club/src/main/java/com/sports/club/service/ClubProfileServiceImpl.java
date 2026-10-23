@@ -38,13 +38,17 @@ public class ClubProfileServiceImpl implements ClubProfileService {
     @Override
     @Transactional(readOnly = true)
     public List<ClubProfileDto.PublicProfile> getPublicClubs() {
-        return clubProfileRepository.findAll().stream().map(ClubProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
+        return clubProfileRepository.findAll().stream()
+                .filter(profile -> profile.getUser() != null && profile.getUser().isEmailVerified() && profile.getUser().isOrganizationApproved())
+                .map(ClubProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public ClubProfileDto.PublicProfile getPublicClubById(Long id) {
-        ClubProfile profile = clubProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("ClubProfile", id.toString()));
+        ClubProfile profile = clubProfileRepository.findById(id)
+                .filter(p -> p.getUser() != null && p.getUser().isEmailVerified() && p.getUser().isOrganizationApproved())
+                .orElseThrow(() -> new EntityNotFoundException("ClubProfile", id.toString()));
         return ClubProfileDto.PublicProfile.fromEntity(profile);
     }
 

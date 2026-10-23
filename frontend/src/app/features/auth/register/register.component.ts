@@ -24,6 +24,7 @@ export class RegisterComponent implements OnInit {
   public acceptTerms = false;
   public guardianName = '';
   public guardianPhone = '';
+  public guardianEmail = '';
   public guardianConsent = false;
 
   // ── PLAYER ──
@@ -67,6 +68,8 @@ export class RegisterComponent implements OnInit {
 
   public isLoading = false;
   public errorMessage = '';
+  public successMessage = '';
+  public registrationCompleted = false;
 
   constructor(
     private authService: AuthService,
@@ -89,6 +92,8 @@ export class RegisterComponent implements OnInit {
     this.selectedRole = role;
     this.step = role === 'PLAYER' ? 1 : 2;
     this.errorMessage = '';
+    this.successMessage = '';
+    this.registrationCompleted = false;
   }
 
   public toggleAgeGroup(group: string): void {
@@ -142,8 +147,8 @@ export class RegisterComponent implements OnInit {
       this.errorMessage = 'يرجى إدخال بريد إلكتروني صحيح.';
       return;
     }
-    if (this.password.length < 8 || !/[A-Za-z]/.test(this.password) || !/\d/.test(this.password)) {
-      this.errorMessage = 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل وتحتوي على حرف ورقم.';
+    if (this.password.length < 12 || this.password.length > 72 || new TextEncoder().encode(this.password).length > 72) {
+      this.errorMessage = 'كلمة المرور يجب أن تتكون من 12 حرفًا على الأقل وبحد أقصى 72 بايت.';
       return;
     }
     if (this.password !== this.confirmPassword) {
@@ -163,9 +168,13 @@ export class RegisterComponent implements OnInit {
       return;
     }
     if (this.selectedRole === 'PLAYER' && this.isMinor()
-      && (!this.guardianName.trim() || !this.guardianPhone.trim() || !this.guardianConsent)) {
+      && (!this.guardianName.trim() || !this.guardianPhone.trim() || !this.guardianEmail.trim() || !this.guardianConsent)) {
       this.step = 1;
-      this.errorMessage = 'حساب اللاعب دون 18 عامًا يحتاج بيانات وموافقة ولي الأمر.';
+      this.errorMessage = 'حساب اللاعب دون 18 عامًا يحتاج بيانات ولي الأمر وبريده وموافقته.';
+      return;
+    }
+    if (this.isMinor() && this.guardianEmail.trim().toLowerCase() === this.email.trim().toLowerCase()) {
+      this.errorMessage = 'استخدم بريدًا إلكترونيًا مستقلًا لولي الأمر.';
       return;
     }
     if (
@@ -206,6 +215,7 @@ export class RegisterComponent implements OnInit {
         playerGoal: this.playerGoal || null,
         guardianName: this.isMinor() ? this.guardianName.trim() : null,
         guardianPhone: this.isMinor() ? this.guardianPhone.trim() : null,
+        guardianEmail: this.isMinor() ? this.guardianEmail.trim() : null,
         guardianConsent: this.isMinor() ? this.guardianConsent : null
       };
       Object.assign(payload, profile);
@@ -242,7 +252,10 @@ export class RegisterComponent implements OnInit {
     this.authService.register(payload).subscribe({
       next: (res) => {
         this.isLoading = false;
-        if (res.success) this.router.navigate(['/profile']);
+        if (res.success) {
+          this.registrationCompleted = true;
+          this.successMessage = 'إذا كان البريد قابلًا للتسجيل، ستصلك رسالة تأكيد. للاعبين دون 18 عامًا سيصل طلب موافقة مستقل إلى ولي الأمر. حسابات الأندية والأكاديميات تنتظر المراجعة بعد تأكيد البريد.';
+        }
       },
       error: (err) => {
         this.isLoading = false;

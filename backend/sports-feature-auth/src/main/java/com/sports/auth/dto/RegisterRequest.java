@@ -11,10 +11,11 @@ public class RegisterRequest {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Must be a valid email format")
+    @Size(max = 150, message = "Email must not exceed 150 characters")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Size(min = 12, max = 72, message = "Password must be between 12 and 72 characters")
     private String password;
 
     @NotBlank(message = "Full name is required")
@@ -187,6 +188,9 @@ public class RegisterRequest {
         @Size(min = 7, max = 20)
         private String guardianPhone;
         private Boolean guardianConsent;
+        @Email(message = "Guardian email must be valid")
+        @Size(max = 150)
+        private String guardianEmail;
 
         public java.time.LocalDate getBirthDate() { return birthDate; }
         public void setBirthDate(java.time.LocalDate birthDate) { this.birthDate = birthDate; }
@@ -224,6 +228,8 @@ public class RegisterRequest {
         public void setGuardianPhone(String guardianPhone) { this.guardianPhone = guardianPhone; }
         public Boolean getGuardianConsent() { return guardianConsent; }
         public void setGuardianConsent(Boolean guardianConsent) { this.guardianConsent = guardianConsent; }
+        public String getGuardianEmail() { return guardianEmail; }
+        public void setGuardianEmail(String guardianEmail) { this.guardianEmail = guardianEmail; }
     }
 
     public static class AcademyRegistration {

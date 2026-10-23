@@ -1,9 +1,10 @@
 package com.sports.common.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sports.common.dto.ErrorResponse;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,8 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.stream.Collectors;
 
 /**
@@ -43,17 +46,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private String trustedProxyIpsRaw;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JdbcTemplate jdbcTemplate;
+    private final AtomicLong lastCleanupWindow = new AtomicLong(-1);
 
-    // Separate caches per tier to allow different limits
-    private final Cache<String, AtomicInteger> generalCache = buildCache();
-    private final Cache<String, AtomicInteger> authCache    = buildCache();
-    private final Cache<String, AtomicInteger> aiCache      = buildCache();
+    public RateLimitingFilter(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    private static Cache<String, AtomicInteger> buildCache() {
-        return Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.MINUTES)
-                .maximumSize(10_000)
-                .build();
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getRequestURI().startsWith("/api/");
     }
 
     @Override
@@ -67,22 +69,25 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
         // Determine which tier this request belongs to
         int limit;
-        Cache<String, AtomicInteger> cache;
+        String tier;
 
         if (path.startsWith("/api/v1/auth/")) {
             limit = authRpm;
-            cache = authCache;
+            tier = "auth";
         } else if (path.startsWith("/api/v1/ai-agent/")) {
             limit = aiRpm;
-            cache = aiCache;
+            tier = "ai";
         } else {
             limit = generalRpm;
-            cache = generalCache;
+            tier = "general";
         }
 
-        AtomicInteger counter = cache.get(clientIp, k -> new AtomicInteger(0));
+        long window = java.time.Instant.now().getEpochSecond() / 60;
+        String bucket = hash(tier + ":" + clientIp);
+        int count = incrementBucket(bucket, window);
+        cleanupOldWindows(window);
 
-        if (counter.incrementAndGet() > limit) {
+        if (count > limit) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setHeader("Retry-After", "60");
@@ -100,6 +105,40 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private int incrementBucket(String bucket, long window) {
+        try {
+            return jdbcTemplate.queryForObject(
+                    "UPDATE dbo.rate_limit_buckets WITH (ROWLOCK) SET request_count = request_count + 1 " +
+                            "OUTPUT inserted.request_count WHERE bucket_key = ? AND window_start = ?",
+                    Integer.class, bucket, window);
+        } catch (EmptyResultDataAccessException missing) {
+            try {
+                jdbcTemplate.update("INSERT INTO dbo.rate_limit_buckets(bucket_key, window_start, request_count) VALUES (?, ?, 1)", bucket, window);
+                return 1;
+            } catch (DuplicateKeyException concurrentInsert) {
+                return jdbcTemplate.queryForObject(
+                        "UPDATE dbo.rate_limit_buckets WITH (ROWLOCK) SET request_count = request_count + 1 " +
+                                "OUTPUT inserted.request_count WHERE bucket_key = ? AND window_start = ?",
+                        Integer.class, bucket, window);
+            }
+        }
+    }
+
+    private void cleanupOldWindows(long window) {
+        long current = window;
+        if (lastCleanupWindow.getAndSet(current) != current) {
+            jdbcTemplate.update("DELETE FROM dbo.rate_limit_buckets WHERE window_start < ?", window - 2);
+        }
+    }
+
+    private String hash(String value) {
+        try {
+            return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
     }
 
     /**

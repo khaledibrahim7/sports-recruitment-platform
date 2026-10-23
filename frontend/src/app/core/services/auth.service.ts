@@ -15,14 +15,17 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  public register(payload: any): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.API_URL}/register`, payload).pipe(
-      tap(res => {
-        if (res.success && res.data) {
-          this.setSession(res.data);
-        }
-      })
-    );
+  public register(payload: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/register`, payload);
+  }
+
+  public verifyAccount(token: string, kind: 'email' | 'guardian'): Observable<ApiResponse<void>> {
+    const endpoint = kind === 'guardian' ? 'verify-guardian' : 'verify-email';
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/${endpoint}`, { token });
+  }
+
+  public resendVerification(email: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/resend-verification`, { email });
   }
 
   public login(payload: any): Observable<ApiResponse<AuthResponse>> {

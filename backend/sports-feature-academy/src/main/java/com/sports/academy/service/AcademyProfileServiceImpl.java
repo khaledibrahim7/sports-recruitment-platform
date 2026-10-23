@@ -38,13 +38,17 @@ public class AcademyProfileServiceImpl implements AcademyProfileService {
     @Override
     @Transactional(readOnly = true)
     public List<AcademyProfileDto.PublicProfile> getPublicAcademies() {
-        return academyProfileRepository.findAll().stream().map(AcademyProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
+        return academyProfileRepository.findAll().stream()
+                .filter(profile -> profile.getUser() != null && profile.getUser().isEmailVerified() && profile.getUser().isOrganizationApproved())
+                .map(AcademyProfileDto.PublicProfile::fromEntity).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public AcademyProfileDto.PublicProfile getPublicAcademyById(Long id) {
-        AcademyProfile profile = academyProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("AcademyProfile", id.toString()));
+        AcademyProfile profile = academyProfileRepository.findById(id)
+                .filter(p -> p.getUser() != null && p.getUser().isEmailVerified() && p.getUser().isOrganizationApproved())
+                .orElseThrow(() -> new EntityNotFoundException("AcademyProfile", id.toString()));
         return AcademyProfileDto.PublicProfile.fromEntity(profile);
     }
 

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
+import { VerifyAccountComponent } from './features/auth/verify-account/verify-account.component';
 import { PlayerListComponent } from './features/players/player-list/player-list.component';
 import { AcademyListComponent } from './features/academies/academy-list/academy-list.component';
 import { ClubListComponent } from './features/clubs/club-list/club-list.component';
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
+  { path: 'verify-account', component: VerifyAccountComponent },
   { path: 'players', component: PlayerListComponent },
   { path: 'academies', component: AcademyListComponent },
   { path: 'clubs', component: ClubListComponent },

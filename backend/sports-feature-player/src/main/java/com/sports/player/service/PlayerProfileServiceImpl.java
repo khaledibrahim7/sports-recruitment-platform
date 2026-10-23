@@ -45,7 +45,9 @@ public class PlayerProfileServiceImpl implements PlayerProfileService {
     @Override
     @Transactional(readOnly = true)
     public List<PublicPlayerProfileDto> getPublicPlayers(PlayerPosition position, Integer age) {
-        return getMatchingProfiles(position, age).stream().map(PublicPlayerProfileDto::fromEntity).collect(Collectors.toList());
+        return getMatchingProfiles(position, age).stream()
+                .filter(this::isPubliclyEligible)
+                .map(PublicPlayerProfileDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
@@ -73,7 +75,12 @@ public class PlayerProfileServiceImpl implements PlayerProfileService {
     @Transactional(readOnly = true)
     public PublicPlayerProfileDto getPublicPlayerById(Long id) {
         PlayerProfile profile = playerProfileRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("PlayerProfile", id.toString()));
+        if (!isPubliclyEligible(profile)) throw new EntityNotFoundException("PlayerProfile", id.toString());
         return PublicPlayerProfileDto.fromEntity(profile);
+    }
+
+    private boolean isPubliclyEligible(PlayerProfile profile) {
+        return profile.getUser() != null && profile.getUser().isEmailVerified() && profile.getUser().isGuardianConsentVerified();
     }
 
     @Override

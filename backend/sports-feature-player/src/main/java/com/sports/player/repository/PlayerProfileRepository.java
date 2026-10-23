@@ -38,9 +38,11 @@ public interface PlayerProfileRepository extends JpaRepository<PlayerProfile, Lo
     @Query("SELECT DISTINCT p FROM PlayerProfile p WHERE (p.position = :position OR :position MEMBER OF p.secondaryPositions) AND p.age = :age")
     List<PlayerProfile> findByPositionAndAge(@Param("position") PlayerPosition position, @Param("age") Integer age);
 
-    @Query(value = "SELECT DISTINCT p.id FROM PlayerProfile p WHERE (:position IS NULL OR p.position = :position OR :position MEMBER OF p.secondaryPositions) " +
+    @Query(value = "SELECT DISTINCT p.id FROM PlayerProfile p WHERE p.user.emailVerified = true AND p.user.guardianConsentVerified = true " +
+            "AND (:position IS NULL OR p.position = :position OR :position MEMBER OF p.secondaryPositions) " +
             "AND (:age IS NULL OR p.age = :age) AND (:query IS NULL OR LOWER(p.fullName) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(COALESCE(p.bio, '')) LIKE LOWER(CONCAT('%', :query, '%')))",
-            countQuery = "SELECT COUNT(DISTINCT p) FROM PlayerProfile p WHERE (:position IS NULL OR p.position = :position OR :position MEMBER OF p.secondaryPositions) " +
+            countQuery = "SELECT COUNT(DISTINCT p) FROM PlayerProfile p WHERE p.user.emailVerified = true AND p.user.guardianConsentVerified = true " +
+                    "AND (:position IS NULL OR p.position = :position OR :position MEMBER OF p.secondaryPositions) " +
                     "AND (:age IS NULL OR p.age = :age) AND (:query IS NULL OR LOWER(p.fullName) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(COALESCE(p.bio, '')) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<Long> searchPublicPlayerIds(@Param("position") PlayerPosition position, @Param("age") Integer age,
                                      @Param("query") String query, Pageable pageable);

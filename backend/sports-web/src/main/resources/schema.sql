@@ -1,12 +1,12 @@
 -- SQL Server Database Creation Script for Sports Recruitment Platform
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SportsPlatformDB')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SportsPlatform')
 BEGIN
-    CREATE DATABASE SportsPlatformDB;
+    CREATE DATABASE SportsPlatform;
 END
 GO
 
-USE SportsPlatformDB;
+USE SportsPlatform;
 GO
 
 -- Users Table

@@ -176,7 +176,10 @@ public class RegisterRequest {
         private String currentTeam;
         @jakarta.validation.constraints.Pattern(regexp = "^$|AMATEUR|ACADEMY|SEMI_PRO|PROFESSIONAL", message = "Invalid competition level")
         private String competitionLevel;
-        @Size(max = 500)
+        @NotBlank(message = "Player registration goal is required")
+        @jakarta.validation.constraints.Pattern(
+                regexp = "JOIN_ACADEMY|JOIN_SEMI_PRO|JOIN_PRO_CLUB|TRIAL_OPPORTUNITY|SHOWCASE_PROFILE",
+                message = "Invalid player registration goal")
         private String playerGoal;
         private Boolean availableForTransfer;
         @Size(max = 500)

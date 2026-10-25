@@ -96,7 +96,6 @@ public class AuthController {
             }
             PlayerProfile profile = new PlayerProfile();
             profile.setUserId(authResponse.getUserId());
-            profile.setUser(null);
             profile.setFullName(authResponse.getFullName());
             profile.setAge(age);
             com.sports.player.domain.PlayerPosition primaryPosition = parsePosition(details.getPosition());
@@ -118,12 +117,12 @@ public class AuthController {
             }
             profile.setVideoUrl(details.getVideoUrl());
             profile.setBio(details.getBio() != null ? details.getBio().trim() : null);
-            if (details.getSecondaryPositions() != null) {
+            if (details.getSecondaryPositions() != null && !details.getSecondaryPositions().isEmpty()) {
                 java.util.Set<com.sports.player.domain.PlayerPosition> secondary = details.getSecondaryPositions().stream()
                         .map(this::parsePosition)
                         .collect(java.util.stream.Collectors.toSet());
                 secondary.remove(primaryPosition);
-                profile.setSecondaryPositions(secondary);
+                if (!secondary.isEmpty()) profile.setSecondaryPositions(secondary);
             }
             if (details.getVideoUrl() != null && !details.getVideoUrl().isBlank()) {
                 profile.setVideoUrls(java.util.List.of(details.getVideoUrl()));

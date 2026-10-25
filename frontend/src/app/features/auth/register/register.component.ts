@@ -128,6 +128,10 @@ export class RegisterComponent implements OnInit {
       this.errorMessage = 'أكمل تاريخ الميلاد والجنسية ومكان الإقامة ورقم الهاتف والقدم المفضلة للمتابعة.';
       return;
     }
+    if (this.selectedRole === 'PLAYER' && !this.playerGoal) {
+      this.errorMessage = 'يرجى اختيار هدفك من التسجيل للمتابعة.';
+      return;
+    }
     this.step = 2;
   }
 
@@ -165,6 +169,11 @@ export class RegisterComponent implements OnInit {
     ) {
       this.step = 1;
       this.errorMessage = 'يرجى إكمال البيانات الأساسية للاعب أولاً.';
+      return;
+    }
+    if (this.selectedRole === 'PLAYER' && !this.playerGoal) {
+      this.step = 1;
+      this.errorMessage = 'يرجى اختيار هدفك من التسجيل أولاً.';
       return;
     }
     if (this.selectedRole === 'PLAYER' && this.isMinor()

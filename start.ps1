@@ -38,6 +38,8 @@ $env:SWAGGER_ENABLED    = "false"
 $env:RATE_LIMIT_GENERAL = "100"
 $env:RATE_LIMIT_AUTH    = "10"
 $env:RATE_LIMIT_AI      = "20"
+$env:SPRING_PROFILES_ACTIVE = "local"
+$env:APP_PUBLIC_URL     = "http://localhost:4200"
 
 Write-Host "[1/3] Environment variables loaded" -ForegroundColor Green
 
@@ -68,7 +70,7 @@ if (-not (Test-Path $jarPath)) {
 $backendArgs = @(
     "-NoExit",
     "-Command",
-    "`$env:DB_PASSWORD='123'; `$env:JWT_SECRET='MinimumThirtyTwoCharactersLongSecretKeyHere2026!!'; `$env:ALLOWED_ORIGINS='http://localhost:4200'; `$env:GEMINI_API_KEY=''; java -jar '$jarPath'"
+    "`$env:DB_PASSWORD='123'; `$env:JWT_SECRET='MinimumThirtyTwoCharactersLongSecretKeyHere2026!!'; `$env:ALLOWED_ORIGINS='http://localhost:4200'; `$env:SPRING_PROFILES_ACTIVE='local'; `$env:APP_PUBLIC_URL='http://localhost:4200'; `$env:GEMINI_API_KEY=''; java -jar '$jarPath'"
 )
 Start-Process powershell -ArgumentList $backendArgs -WindowStyle Normal
 Write-Host "[3/3] Backend starting in new window (port 8080)..." -ForegroundColor Green
@@ -84,7 +86,7 @@ while ($waited -lt $maxWait) {
     Start-Sleep -Seconds 2
     $waited += 2
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8080/actuator/health" -TimeoutSec 2 -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/players?page=0&size=1" -TimeoutSec 5 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
             $ready = $true
             break
@@ -95,7 +97,7 @@ while ($waited -lt $maxWait) {
 
 if ($ready) {
     Write-Host ""
-    Write-Host "Backend is UP!" -ForegroundColor Green
+    Write-Host "Backend API and database are UP!" -ForegroundColor Green
 } else {
     Write-Host ""
     Write-Host "[WARN] Backend did not respond in $maxWait seconds. Check the backend window." -ForegroundColor Yellow
@@ -105,7 +107,7 @@ if ($ready) {
 $frontendArgs = @(
     "-NoExit",
     "-Command",
-    "Set-Location '$frontendPath'; npx ng serve --port 4200 --open"
+    "Set-Location '$frontendPath'; npx ng serve --port=4200 --open"
 )
 Start-Process powershell -ArgumentList $frontendArgs -WindowStyle Normal
 Write-Host ""

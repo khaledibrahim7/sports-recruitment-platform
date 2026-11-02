@@ -16,6 +16,7 @@ export class LoginComponent implements OnInit {
   public password = '';
   public isLoading = false;
   public errorMessage = '';
+  public requiresVerification = false;
   private returnUrl = '/';
 
   constructor(
@@ -33,15 +34,25 @@ export class LoginComponent implements OnInit {
   }
 
   public onSubmit(): void {
-    if (!this.email || !this.password) {
+    const normalizedEmail = this.email.trim().toLowerCase();
+    if (!normalizedEmail || !this.password) {
       this.errorMessage = 'يرجى كتابة البريد الإلكتروني وكلمة المرور';
+      return;
+    }
+    if (normalizedEmail.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      this.errorMessage = 'يرجى إدخال بريد إلكتروني صحيح.';
+      return;
+    }
+    if (new TextEncoder().encode(this.password).length > 72) {
+      this.errorMessage = 'كلمة المرور لا يمكن أن تتجاوز 72 بايت.';
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.requiresVerification = false;
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: normalizedEmail, password: this.password }).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.success) {
@@ -51,6 +62,7 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = err.error?.message || 'بيانات الدخول غير صحيحة، يرجى المحاولة مجدداً.';
+        this.requiresVerification = err.status === 403 && err.error?.errorCode === 'ACCOUNT_PENDING';
       }
     });
   }

@@ -45,7 +45,7 @@ export class VerifyAccountComponent implements OnInit {
       replaceUrl: true
     });
     if (!token) {
-      this.message = 'رابط التأكيد غير صالح أو انتهت صلاحيته.';
+      this.message = 'أدخل بريد الحساب لإعادة إرسال رابط التأكيد.';
       this.finished = true;
       this.canResend = true;
       return;

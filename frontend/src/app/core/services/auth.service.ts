@@ -16,7 +16,10 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   public register(payload: any): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.API_URL}/register`, payload);
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/register`, {
+      ...payload,
+      email: typeof payload?.email === 'string' ? payload.email.trim().toLowerCase() : payload?.email
+    });
   }
 
   public verifyAccount(token: string, kind: 'email' | 'guardian'): Observable<ApiResponse<void>> {
@@ -25,11 +28,15 @@ export class AuthService {
   }
 
   public resendVerification(email: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.API_URL}/resend-verification`, { email });
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/resend-verification`, { email: email.trim().toLowerCase() });
   }
 
   public login(payload: any): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.API_URL}/login`, payload).pipe(
+    const normalizedPayload = {
+      ...payload,
+      email: typeof payload?.email === 'string' ? payload.email.trim().toLowerCase() : payload?.email
+    };
+    return this.http.post<ApiResponse<AuthResponse>>(`${this.API_URL}/login`, normalizedPayload).pipe(
       tap(res => {
         if (res.success && res.data) {
           this.setSession(res.data);

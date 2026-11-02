@@ -13,6 +13,9 @@
         <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
       </div>
     }
+    @if (requiresVerification) {
+      <p class="text-center mb-3"><a routerLink="/verify-account">إعادة إرسال رابط تأكيد البريد</a></p>
+    }
 
     <form (ngSubmit)="onSubmit()" class="auth-form">
       <div class="form-group">
@@ -23,6 +26,10 @@
           name="email" 
           [(ngModel)]="email" 
           required 
+          maxlength="150"
+          autocomplete="email"
+          inputmode="email"
+          autocapitalize="off"
           placeholder="example@domain.com"
           class="form-control"
         />
@@ -36,6 +43,7 @@
           name="password" 
           [(ngModel)]="password" 
           required 
+          autocomplete="current-password"
           placeholder="••••••••"
           class="form-control"
         />

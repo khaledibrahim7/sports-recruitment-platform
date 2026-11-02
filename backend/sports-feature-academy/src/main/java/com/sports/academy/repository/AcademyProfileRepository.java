@@ -21,4 +21,7 @@ public interface AcademyProfileRepository extends JpaRepository<AcademyProfile, 
 
     @EntityGraph(attributePaths = {"user"})
     Optional<AcademyProfile> findByUserId(Long userId);
+
+    @EntityGraph(attributePaths = {"user"})
+    List<AcademyProfile> findByUser_IdIn(List<Long> userIds);
 }

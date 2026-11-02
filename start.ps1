@@ -13,7 +13,11 @@ Write-Host ""
 $scriptDir = $PSScriptRoot
 $localEnvFile = Join-Path $scriptDir ".env"
 if (Test-Path $localEnvFile) {
-    $allowedStorageKeys = @('VIDEO_S3_BUCKET', 'VIDEO_S3_ENDPOINT', 'VIDEO_S3_REGION', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'VIDEO_S3_URL_TTL')
+    $allowedStorageKeys = @(
+        'VIDEO_S3_BUCKET', 'VIDEO_S3_ENDPOINT', 'VIDEO_S3_REGION', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'VIDEO_S3_URL_TTL',
+        'SMTP_HOST', 'SMTP_PORT', 'SMTP_USERNAME', 'SMTP_PASSWORD', 'SMTP_AUTH', 'SMTP_STARTTLS',
+        'SMTP_STARTTLS_REQUIRED', 'SMTP_CONNECTION_TIMEOUT', 'SMTP_TIMEOUT', 'SMTP_WRITE_TIMEOUT', 'MAIL_FROM'
+    )
     foreach ($line in Get-Content $localEnvFile) {
         if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$' -and $allowedStorageKeys -contains $matches[1]) {
             $value = $matches[2].Trim('"', "'")

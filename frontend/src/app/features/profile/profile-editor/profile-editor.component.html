@@ -14,29 +14,29 @@
 
         <!-- Dashboard Navigation Tabs -->
         <div class="nav-pills d-flex gap-2">
-          <button 
-            (click)="setTab('EDIT')" 
-            class="btn btn-sm" 
-            [class.btn-primary]="activeTab === 'EDIT'" 
+          <button
+            (click)="setTab('EDIT')"
+            class="btn btn-sm"
+            [class.btn-primary]="activeTab === 'EDIT'"
             [class.btn-outline]="activeTab !== 'EDIT'"
           >
             <i class="fa-solid fa-pen-to-square"></i> تعديل البروفايل
           </button>
-          
-          <button 
-            (click)="setTab('OFFERS')" 
-            class="btn btn-sm" 
-            [class.btn-primary]="activeTab === 'OFFERS'" 
+
+          <button
+            (click)="setTab('OFFERS')"
+            class="btn btn-sm"
+            [class.btn-primary]="activeTab === 'OFFERS'"
             [class.btn-outline]="activeTab !== 'OFFERS'"
           >
             <i class="fa-solid fa-paper-plane"></i> طلبات المعايشة
           </button>
 
           @if (userRole() === 'ACADEMY' || userRole() === 'CLUB') {
-            <button 
-              (click)="setTab('WATCHLIST')" 
-              class="btn btn-sm" 
-              [class.btn-primary]="activeTab === 'WATCHLIST'" 
+            <button
+              (click)="setTab('WATCHLIST')"
+              class="btn btn-sm"
+              [class.btn-primary]="activeTab === 'WATCHLIST'"
               [class.btn-outline]="activeTab !== 'WATCHLIST'"
             >
               <i class="fa-solid fa-bookmark text-gold"></i> قائمة المتابعة
@@ -148,9 +148,9 @@
                 <div class="d-flex flex-wrap gap-2 mt-2">
                   @for (pos of playerPositions; track pos) {
                     @if (pos !== playerForm.position) {
-                      <button 
-                        type="button" 
-                        (click)="toggleSecondaryPosition(pos)" 
+                      <button
+                        type="button"
+                        (click)="toggleSecondaryPosition(pos)"
                         class="btn-pos-pill"
                         [class.active]="isSecondaryPositionSelected(pos)"
                       >
@@ -170,23 +170,25 @@
                 <label><i class="fa-solid fa-image text-primary"></i> رابط صورة البروفايل الشخصية (اختياري)</label>
                 <div class="d-flex align-items-center gap-3">
                   <div class="avatar-preview-box">
-                    <img 
-                      [src]="playerForm.avatarUrl && playerForm.avatarUrl.trim() !== '' ? playerForm.avatarUrl : '/default-avatar.png'" 
-                      (error)="$any($event.target).src='/default-avatar.png'" 
-                      alt="صورة الملف الشخصي" 
+                    <img
+                      [src]="mediaUrl(playerForm.avatarUrl)"
+                      (error)="$any($event.target).src='default-avatar.png'"
+                      alt="صورة الملف الشخصي"
                       class="avatar-preview-img"
                     />
                   </div>
                   <div class="flex-grow-1">
-                    <input 
-                      type="url" 
-                      [(ngModel)]="playerForm.avatarUrl" 
-                      name="avatarUrl" 
-                      placeholder="ضع رابط صورة شخصية (أو اتركها فارغة للاعتماد على الصورة الافتراضية)..." 
+                    <input
+                      type="text"
+                      [(ngModel)]="playerForm.avatarUrl"
+                      name="avatarUrl"
+                      placeholder="ضع رابط صورة شخصية (أو اتركها فارغة للاعتماد على الصورة الافتراضية)..."
                       class="form-control"
                     />
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" (change)="uploadAvatarFile($event)" class="form-control mt-2" aria-label="رفع صورة الملف الشخصي" />
+                    @if (isUploadingImage) { <small class="text-primary d-block mt-1"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ رفع الصورة...</small> }
                     <small class="text-muted mt-1 d-block">
-                      إذا تركت الحقل فارغاً، سيتم إظهار الصورة الافتراضية الرسمية للمنصة تلقائياً.
+                      يمكنك استخدام رابط صورة أو رفع JPG أو PNG أو WebP أو AVIF حتى 10 ميجابايت. الصورة المرفوعة تُحفظ في مساحة المنصة.
                     </small>
                   </div>
                 </div>
@@ -195,7 +197,7 @@
               <!-- Radar Skills Sliders & Interactive Visualization -->
               <div class="form-group mt-4 p-3 glass-card border border-emerald">
                 <h4 class="mb-3 text-emerald"><i class="fa-solid fa-chart-pie"></i> تقييمات المهارات والمؤشرات البدنية (Radar Skills)</h4>
-                
+
                 <div class="row align-items-center">
                   <div class="col-md-7">
                     <div class="form-group mb-2">
@@ -270,19 +272,19 @@
                     {{ playerForm.videoUrls.length }} / 3 فيديوهات
                   </span>
                 </div>
-                
+
                 @if (playerForm.videoUrls.length < 3) {
                   <div class="d-flex gap-2 mb-3">
-                    <input 
-                      type="url" 
-                      [(ngModel)]="newVideoUrl" 
-                      name="newVideoUrl" 
-                      placeholder="ضع رابط فيديو جديد (YouTube / Vimeo / Direct)..." 
+                    <input
+                      type="url"
+                      [(ngModel)]="newVideoUrl"
+                      name="newVideoUrl"
+                      placeholder="YouTube أو Vimeo أو Drive أو رابط فيديو مباشر (MP4)..."
                       class="form-control"
                     />
-                    <button 
-                      type="button" 
-                      (click)="addVideoUrl()" 
+                    <button
+                      type="button"
+                      (click)="addVideoUrl()"
                       class="btn btn-primary btn-sm whitespace-nowrap"
                     >
                       <i class="fa-solid fa-plus"></i> إضافة فيديو
@@ -314,9 +316,9 @@
                             {{ playerForm.uploadedVideoUrls.includes(vid) ? 'مرفوع على المنصة' : vid }}
                           </span>
                         </div>
-                        <button 
-                          type="button" 
-                          (click)="removeVideoUrl($index)" 
+                        <button
+                          type="button"
+                          (click)="removeVideoUrl($index)"
                           class="btn btn-outline-danger btn-xs flex-shrink-0"
                           title="حذف هذا الفيديو"
                         >
@@ -371,7 +373,8 @@
 
               <div class="form-group">
                 <label>رابط اللوجو / الشعار</label>
-                <input type="url" [(ngModel)]="academyForm.logoUrl" name="logoUrl" class="form-control" />
+                <input type="text" [(ngModel)]="academyForm.logoUrl" name="logoUrl" placeholder="رابط خارجي اختياري أو ارفع الشعار بالأسفل" class="form-control" />
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" (change)="uploadAcademyLogo($event)" class="form-control mt-2" aria-label="رفع شعار الأكاديمية" />
               </div>
 
               <div class="form-group">
@@ -397,7 +400,8 @@
 
               <div class="form-group">
                 <label>رابط اللوجو / الشعار الرسمي للنادي *</label>
-                <input type="url" [(ngModel)]="clubForm.logoUrl" name="logoUrl" required class="form-control" />
+                <input type="text" [(ngModel)]="clubForm.logoUrl" name="logoUrl" placeholder="رابط خارجي اختياري أو ارفع الشعار بالأسفل" class="form-control" />
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" (change)="uploadClubLogo($event)" class="form-control mt-2" aria-label="رفع شعار النادي" />
               </div>
 
               <div class="form-group">
@@ -441,7 +445,7 @@
         @if (activeTab === 'OFFERS') {
           <div class="mt-4">
             <h3 class="mb-3 text-gold">
-              <i class="fa-solid fa-paper-plane"></i> 
+              <i class="fa-solid fa-paper-plane"></i>
               {{ userRole() === 'PLAYER' ? 'طلبات المعايشة والاختبار الموجهة إليك' : 'طلبات المعايشة المنشورة للاعبين' }}
             </h3>
 
@@ -515,7 +519,7 @@
         @if (activeTab === 'WATCHLIST') {
           <div class="mt-4">
             <h3 class="mb-3 text-gold"><i class="fa-solid fa-bookmark"></i> قائمة اللاعبين المحفوظين للمتابعة</h3>
-            
+
             @if (bookmarkedPlayers.length === 0) {
               <div class="text-center py-5 text-muted glass-card">
                 <i class="fa-solid fa-bookmark fa-3x mb-2 opacity-50"></i>
@@ -526,10 +530,10 @@
                 @for (player of bookmarkedPlayers; track player.id) {
                   <div class="glass-card player-card p-3 d-flex flex-column align-items-center text-center">
                     <div class="player-avatar mb-2">
-                      <img 
-                        [src]="player.avatarUrl && player.avatarUrl.trim() !== '' ? player.avatarUrl : '/default-avatar.png'" 
-                        (error)="$any($event.target).src='/default-avatar.png'" 
-                        [alt]="player.fullName" 
+                      <img
+                        [src]="mediaUrl(player.avatarUrl)"
+                        (error)="$any($event.target).src='default-avatar.png'"
+                        [alt]="player.fullName"
                         class="player-avatar-img"
                       />
                     </div>

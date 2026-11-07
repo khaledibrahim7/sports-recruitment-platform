@@ -11,19 +11,23 @@ export class NotificationService {
 
   public unreadCountSignal = signal<number>(0);
   public notificationsSignal = signal<NotificationItem[]>([]);
+  public loadErrorSignal = signal('');
 
   constructor(private http: HttpClient) {}
 
   public loadNotifications(): void {
+    this.loadErrorSignal.set('');
     this.http.get<ApiResponse<NotificationItem[]>>(this.API_URL).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.notificationsSignal.set(res.data);
           const unread = res.data.filter(n => !n.isRead).length;
           this.unreadCountSignal.set(unread);
+        } else {
+          this.loadErrorSignal.set('تعذر تحميل الإشعارات. حاول مرة أخرى.');
         }
       },
-      error: () => {}
+      error: () => this.loadErrorSignal.set('تعذر تحميل الإشعارات. تحقق من الاتصال وحاول مرة أخرى.')
     });
   }
 

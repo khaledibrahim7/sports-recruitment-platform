@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AcademyService } from '../../../core/services/academy.service';
+import { PlayerService } from '../../../core/services/player.service';
 import { AcademyProfile } from '../../../core/models/models';
 
 @Component({
@@ -12,12 +14,20 @@ import { AcademyProfile } from '../../../core/models/models';
   styleUrls: ['./academy-list.component.scss']
 })
 export class AcademyListComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
   public academies: AcademyProfile[] = [];
   public isLoading = false;
 
-  constructor(private academyService: AcademyService) {}
+  constructor(private academyService: AcademyService, private playerService: PlayerService) {}
+
+  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
   ngOnInit(): void {
+    this.title.setTitle('الأكاديميات الرياضية المسجلة | الكورة لعبتنا');
+    this.meta.updateTag({ name: 'description', content: 'تصفح ملفات الأكاديميات الرياضية وبرامجها التدريبية المسجلة على المنصة.' });
+    if (!isPlatformBrowser(this.platformId)) return;
     this.loadAcademies();
   }
 

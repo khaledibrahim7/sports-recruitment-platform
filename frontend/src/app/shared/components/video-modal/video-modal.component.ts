@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -9,6 +9,37 @@ export interface VideoItem {
   thumbnailUrl: string | null;
   label: string;
   type: 'youtube' | 'drive' | 'vimeo' | 'direct' | 'hosted' | 'unknown';
+}
+
+export function parseSupportedVideoUrl(input: string): Pick<VideoItem, 'youtubeId' | 'thumbnailUrl' | 'type'> | null {
+  if (input.startsWith('platform-video:') && input.length > 'platform-video:'.length) {
+    return { youtubeId: null, thumbnailUrl: null, type: 'hosted' };
+  }
+  let url: URL;
+  try { url = new URL(input); } catch { return null; }
+  if (url.protocol !== 'https:') return null;
+  const host = url.hostname.toLowerCase().replace(/^www\./, '');
+
+  if (['youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'youtu.be'].includes(host)) {
+    let id: string | null = null;
+    if (host === 'youtu.be') id = url.pathname.split('/').filter(Boolean)[0] ?? null;
+    else if (url.pathname === '/watch') id = url.searchParams.get('v');
+    else if (/^\/(embed|v|shorts|live)\//.test(url.pathname)) id = url.pathname.split('/')[2] ?? null;
+    if (!id || !/^[\w-]{11}$/.test(id)) return null;
+    return { youtubeId: id, thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`, type: 'youtube' };
+  }
+  if (host === 'drive.google.com') {
+    const id = url.pathname.match(/^\/file\/d\/([\w-]+)(?:\/|$)/)?.[1];
+    return id ? { youtubeId: null, thumbnailUrl: null, type: 'drive' } : null;
+  }
+  if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+    const id = url.pathname.match(/^\/(?:video\/)?(\d+)(?:\/|$)/)?.[1];
+    return id ? { youtubeId: null, thumbnailUrl: null, type: 'vimeo' } : null;
+  }
+  if (/\.(mp4|webm|ogg|mov|m4v)$/i.test(url.pathname)) {
+    return { youtubeId: null, thumbnailUrl: null, type: 'direct' };
+  }
+  return null;
 }
 
 @Component({
@@ -56,6 +87,8 @@ export class VideoModalComponent implements OnChanges {
   public selectVideo(index: number): void {
     this.selectedIndex = index;
     this.showPoster = true;
+    this.isDirectVideo = false;
+    this.safeEmbedUrl = null;
     const item = this.videoItems[index];
     if (item) {
       this.currentRawUrl = item.rawUrl;
@@ -64,9 +97,14 @@ export class VideoModalComponent implements OnChanges {
         const key = item.rawUrl.substring('platform-video:'.length);
         this.safeEmbedUrl = null;
         this.isDirectVideo = false;
-        this.http.get<{ success: boolean; data: string }>(`/api/v1/players/videos/${key}`).subscribe({
-          next: (res) => { if (this.selectedIndex === index && res.success) this.currentRawUrl = res.data; },
-          error: () => { this.currentRawUrl = ''; }
+        this.http.get<{ success: boolean; data: string }>('/api/v1/players/videos', { params: { key } }).subscribe({
+          next: (res) => {
+            if (this.selectedIndex === index && res.success) {
+              this.currentRawUrl = res.data;
+              this.isDirectVideo = true;
+            }
+          },
+          error: () => { if (this.selectedIndex === index) this.currentRawUrl = ''; }
         });
       } else {
         this.processVideoItem(item);
@@ -83,6 +121,11 @@ export class VideoModalComponent implements OnChanges {
     this.close.emit();
   }
 
+  @HostListener('document:keydown.escape')
+  public handleEscape(): void {
+    if (this.isOpen) this.closeModal();
+  }
+
   // ── Build de-duplicated list with metadata ──
   private buildVideoItems(): void {
     const items: VideoItem[] = [];
@@ -97,9 +140,13 @@ export class VideoModalComponent implements OnChanges {
     }
 
     let counter = 1;
+    const seen = new Set<string>();
     for (const u of rawList) {
       if (!u?.trim()) continue;
       const trimmed = u.trim();
+      const dedupeKey = trimmed;
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
       items.push(this.parseVideoItem(trimmed, counter++));
     }
 
@@ -107,67 +154,13 @@ export class VideoModalComponent implements OnChanges {
   }
 
   private parseVideoItem(url: string, idx: number): VideoItem {
-    if (url.startsWith('platform-video:')) {
-      return { rawUrl: url, youtubeId: null, thumbnailUrl: null, label: `مقطع ${idx}`, type: 'hosted' };
-    }
-    if (url.startsWith('platform-video:')) {
-      return { rawUrl: url, youtubeId: null, thumbnailUrl: null, label: `مقطع ${idx}`, type: 'hosted' };
-    }
-    // ── YouTube ──
-    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i);
-    if (ytMatch?.[1]) {
-      const id = ytMatch[1];
-      return {
-        rawUrl: url,
-        youtubeId: id,
-        thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-        label: `مقطع ${idx}`,
-        type: 'youtube'
-      };
-    }
-
-    // ── Google Drive ──
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/i);
-    if (driveMatch?.[1]) {
-      return {
-        rawUrl: url,
-        youtubeId: null,
-        thumbnailUrl: null,
-        label: `مقطع ${idx}`,
-        type: 'drive'
-      };
-    }
-
-    // ── Vimeo ──
-    const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
-    if (vimeoMatch?.[1]) {
-      return {
-        rawUrl: url,
-        youtubeId: null,
-        thumbnailUrl: null,
-        label: `مقطع ${idx}`,
-        type: 'vimeo'
-      };
-    }
-
-    // ── Direct MP4 etc ──
-    const lower = url.toLowerCase();
-    if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/.test(lower) || lower.startsWith('data:video/')) {
-      return {
-        rawUrl: url,
-        youtubeId: null,
-        thumbnailUrl: null,
-        label: `مقطع ${idx}`,
-        type: 'direct'
-      };
-    }
-
+    const parsed = parseSupportedVideoUrl(url);
     return {
       rawUrl: url,
-      youtubeId: null,
-      thumbnailUrl: null,
+      youtubeId: parsed?.youtubeId ?? null,
+      thumbnailUrl: parsed?.thumbnailUrl ?? null,
       label: `مقطع ${idx}`,
-      type: 'unknown'
+      type: parsed?.type ?? 'unknown'
     };
   }
 
@@ -186,13 +179,15 @@ export class VideoModalComponent implements OnChanges {
         break;
       }
       case 'drive': {
-        const id = item.rawUrl.match(/drive\.google\.com\/file\/d\/([\w-]+)/i)?.[1];
+        const id = new URL(item.rawUrl).pathname.match(/^\/file\/d\/([\w-]+)/)?.[1];
+        if (!id) break;
         const embedUrl = `https://drive.google.com/file/d/${id}/preview?usp=sharing`;
         this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
         break;
       }
       case 'vimeo': {
-        const id = item.rawUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i)?.[1];
+        const id = new URL(item.rawUrl).pathname.match(/^\/(?:video\/)?(\d+)/)?.[1];
+        if (!id) break;
         const embedUrl = `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0&color=C9974A`;
         this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
         break;
@@ -202,9 +197,7 @@ export class VideoModalComponent implements OnChanges {
         break;
       }
       default: {
-        if (item.rawUrl.startsWith('http')) {
-          this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(item.rawUrl);
-        }
+        this.safeEmbedUrl = null;
       }
     }
   }

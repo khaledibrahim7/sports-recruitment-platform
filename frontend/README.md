@@ -1,59 +1,41 @@
-# Frontend
+# الكورة لعبتنا — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.27.
+واجهة المنصة مبنية بـ Angular 19 وTypeScript. التطبيق SPA مع تحميل كسول للصفحات، ويعتمد على Spring Boot API تحت `/api/v1`.
 
-## Development server
+## المتطلبات
 
-To start a local development server, run:
+- Node.js 20 أو أحدث
+- npm
+- backend محلي يعمل على `http://localhost:8080` عند اختبار التكامل
 
-```bash
-ng serve
+## التشغيل المحلي
+
+```powershell
+npm ci
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+يفتح Angular على `http://localhost:4200` ويستخدم [proxy.conf.json](proxy.conf.json) لإرسال `/api` إلى backend المحلي.
 
-## Code scaffolding
+## التحقق والبناء
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+npm run typecheck
+npm run test:ci
+npm run test:e2e
+npm run build
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+`typecheck` يتحقق من كود التطبيق والاختبارات. `test:ci` يشغل Jasmine/Karma على ChromeHeadless. ناتج البناء الإنتاجي يوجد في `dist/frontend/browser`.
 
-```bash
-ng generate --help
-```
+لتشغيل E2E محليًا، نزّل Chromium مرة واحدة باستخدام `npx playwright install chromium` ثم شغّل `npm run test:e2e`.
 
-## Building
+## النشر
 
-To build the project run:
+ملف GitHub Actions في `../.github/workflows/deploy.yml` ينشر فرع `prod` إلى GitHub Pages. الصفحات العامة تُ prerender إلى HTML ثابت، و`404.html` يوفر fallback للروابط العميقة. الواجهة تستدعي `/api/v1` على نفس النطاق؛ لذلك يحتاج نشر الإنتاج إلى reverse proxy أو gateway يمرر هذه المسارات إلى backend، مع إعداد CORS وCSP والتخزين وفق ملفات التشغيل في جذر المستودع. GitHub Pages وحده لا يشغّل backend ولا SSR وقت الطلب.
 
-```bash
-ng build
-```
+## الإعدادات والبيانات الحساسة
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+لا تضع مفاتيح التخزين أو البريد أو JWT في ملفات الواجهة أو Git. إعدادات backend المحلية موثقة في ملفات الإعداد بجذر المشروع، ويجب تمرير أسرار الإنتاج من مدير أسرار بيئة النشر.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+راقب الأخطاء عبر Sentry بعد تعريف متغير GitHub Actions `SENTRY_DSN` (Repository Variables). الـ DSN معرف عام للواجهة؛ لا تستخدم فيه أسرارًا.

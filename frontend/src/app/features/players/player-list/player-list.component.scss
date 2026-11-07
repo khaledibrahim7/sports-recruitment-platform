@@ -100,6 +100,15 @@
     color: #ffffff;
   }
 
+  .player-profile-link {
+    display: inline-block;
+    color: var(--acc);
+    font-size: .82rem;
+    margin: 0 0 .75rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .player-stats-bar {
     display: flex;
     align-items: center;

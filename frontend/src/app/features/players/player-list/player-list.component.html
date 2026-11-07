@@ -43,6 +43,13 @@
       </div>
     </div>
 
+    @if (bookmarkService.loadErrorSignal()) {
+      <div class="alert alert-warning mt-3" role="alert">{{ bookmarkService.loadErrorSignal() }}</div>
+    }
+    @if (bookmarkService.actionErrorSignal()) {
+      <div class="alert alert-warning mt-3" role="alert">{{ bookmarkService.actionErrorSignal() }}</div>
+    }
+
     <!-- Players Grid -->
     @if (isLoading) {
       <div class="loading-spinner text-center py-5">
@@ -162,9 +169,9 @@
                 }
               </div>
               @if (canBookmark()) {
-                <button 
-                  type="button" 
-                  (click)="toggleBookmark(player, $event)" 
+                <button
+                  type="button"
+                  (click)="toggleBookmark(player, $event)"
                   class="btn-bookmark"
                   [class.active]="isBookmarked(player.id)"
                   [title]="isBookmarked(player.id) ? 'إزالة من قائمة المتابعة والتكشيف' : 'إضافة لقائمة المتابعة والتكشيف'"
@@ -175,16 +182,17 @@
             </div>
 
             <div class="player-avatar">
-              <img 
-                [src]="player.avatarUrl && player.avatarUrl.trim() !== '' ? player.avatarUrl : '/default-avatar.png'" 
-                (error)="$any($event.target).src='/default-avatar.png'" 
-                [alt]="player.fullName" 
+              <img
+                [src]="mediaUrl(player.avatarUrl)"
+                (error)="$any($event.target).src='default-avatar.png'"
+                [alt]="player.fullName"
                 class="player-avatar-img"
               />
             </div>
 
             <h3 class="player-name">{{ player.fullName }}</h3>
-            
+            <a class="player-profile-link" [routerLink]="['/players', player.id]">عرض الملف الكامل</a>
+
             <div class="player-stats-bar d-flex align-items-center justify-content-around">
               <div class="stat">
                 <span class="val">{{ player.age }}</span>

@@ -9,6 +9,7 @@ import { TrialOfferService } from '../../../core/services/trial-offer.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
 import { PlayerPosition, PlayerPositionLabels, PlayerProfile, PublicPlayerProfile, TrialOffer } from '../../../core/models/models';
 import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
+import { parseSupportedVideoUrl } from '../../../shared/components/video-modal/video-modal.component';
 
 @Component({
   selector: 'app-profile-editor',
@@ -70,6 +71,72 @@ export class ProfileEditorComponent implements OnInit {
 
   public newVideoUrl = '';
   public isUploadingVideo = false;
+  public isUploadingImage = false;
+  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
+
+  public uploadAvatarFile(event: Event): void {
+    this.uploadProfileImage(event, url => { this.playerForm.avatarUrl = url; });
+  }
+
+  public uploadAcademyLogo(event: Event): void {
+    this.uploadProfileImage(event, url => { this.academyForm.logoUrl = url; });
+  }
+
+  public uploadClubLogo(event: Event): void {
+    this.uploadProfileImage(event, url => { this.clubForm.logoUrl = url; });
+  }
+
+  private uploadProfileImage(event: Event, setUrl: (url: string) => void): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+    if (!allowedTypes.includes(file.type.toLowerCase()) || file.size <= 0 || file.size > 10 * 1024 * 1024) {
+      this.errorMessage = 'الصيغ المدعومة JPG وPNG وWebP وAVIF، وبحجم أقصى 10 ميجابايت.';
+      input.value = '';
+      return;
+    }
+    this.isUploadingImage = true;
+    this.errorMessage = '';
+    this.playerService.createImageUploadUrl(file).subscribe({
+      next: (targetResponse) => {
+        const target = targetResponse.data;
+        if (!targetResponse.success || !target || file.size > target.maxBytes) {
+          this.isUploadingImage = false;
+          this.errorMessage = 'تعذر تجهيز رفع الصورة أو تجاوزت الحجم المسموح.';
+          input.value = '';
+          return;
+        }
+        this.playerService.uploadFileToStorage(target.uploadUrl, file, target.contentType).subscribe({
+          next: () => this.playerService.confirmImageUpload(target.key).subscribe({
+            next: (confirmation) => {
+              this.isUploadingImage = false;
+              if (confirmation.success && confirmation.data) {
+                setUrl(confirmation.data);
+                this.successMessage = 'تم رفع الصورة إلى مساحة المنصة.';
+              }
+              input.value = '';
+            },
+            error: () => {
+              this.isUploadingImage = false;
+              this.errorMessage = 'تم رفع الصورة لكن تعذر تأكيدها.';
+              input.value = '';
+            }
+          }),
+          error: () => {
+            this.isUploadingImage = false;
+            this.errorMessage = 'تعذر رفع الصورة إلى التخزين. تحقق من إعداد CORS للحاوية.';
+            input.value = '';
+          }
+        });
+      },
+      error: () => {
+        this.isUploadingImage = false;
+        this.errorMessage = 'تعذر تجهيز رابط رفع الصورة.';
+        input.value = '';
+      }
+    });
+  }
 
   public uploadVideoFile(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -108,7 +175,7 @@ export class ProfileEditorComponent implements OnInit {
           input.value = '';
           return;
         }
-        this.playerService.uploadVideoToStorage(target.uploadUrl, file, target.contentType).subscribe({
+        this.playerService.uploadFileToStorage(target.uploadUrl, file, target.contentType).subscribe({
           next: () => this.playerService.confirmVideoUpload(target.key).subscribe({
             next: (res) => {
               this.isUploadingVideo = false;
@@ -207,12 +274,12 @@ export class ProfileEditorComponent implements OnInit {
     if (role === 'PLAYER') {
       this.trialOfferService.getMyOffers().subscribe({
         next: (res) => { if (res.success && res.data) this.myOffers = res.data; },
-        error: () => {}
+        error: () => { this.errorMessage = 'تعذر تحميل طلبات المعايشة. تحقق من الاتصال وحاول مرة أخرى.'; }
       });
     } else if (role === 'ACADEMY' || role === 'CLUB') {
       this.trialOfferService.getSentOffers().subscribe({
         next: (res) => { if (res.success && res.data) this.sentOffers = res.data; },
-        error: () => {}
+        error: () => { this.errorMessage = 'تعذر تحميل الطلبات المرسلة. تحقق من الاتصال وحاول مرة أخرى.'; }
       });
     }
   }
@@ -238,7 +305,7 @@ export class ProfileEditorComponent implements OnInit {
           this.bookmarkedPlayers = res.data;
         }
       },
-      error: () => {}
+      error: () => { this.errorMessage = 'تعذر تحميل قائمة المتابعة. تحقق من الاتصال وحاول مرة أخرى.'; }
     });
   }
 
@@ -265,10 +332,12 @@ export class ProfileEditorComponent implements OnInit {
 
     // ── منع تكرار نفس الرابط ──
     const normalized = (value: string) => {
+      const parsed = parseSupportedVideoUrl(value.trim());
+      if (parsed?.type === 'youtube') return `youtube:${parsed.youtubeId}`;
       try {
         const url = new URL(value.trim());
-        if (url.hostname.includes('youtu.be')) return `youtube:${url.pathname.slice(1).split('/')[0]}`;
-        if (url.hostname.includes('youtube.com')) return `youtube:${url.searchParams.get('v') || url.pathname.split('/').filter(Boolean).pop()}`;
+        if (parsed?.type === 'drive') return `drive:${url.pathname.match(/^\/file\/d\/([\w-]+)/)?.[1]}`;
+        if (parsed?.type === 'vimeo') return `vimeo:${url.pathname.match(/^\/(?:video\/)?(\d+)/)?.[1]}`;
         return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/$/, '')}${url.search}`;
       } catch { return value.trim().toLowerCase(); }
     };
@@ -277,19 +346,9 @@ export class ProfileEditorComponent implements OnInit {
       return;
     }
 
-    // ── التحقق من صلاحية الرابط ──
-    const isYouTube = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/))/i.test(trimmed);
-    const isDrive   = /drive\.google\.com\/file\/d\//i.test(trimmed);
-    const isVimeo   = /vimeo\.com\/(?:video\/)?[0-9]+/i.test(trimmed);
-    const isDirect  = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(trimmed);
-    const isHttp    = trimmed.startsWith('http://') || trimmed.startsWith('https://');
-
-    if (!isHttp) {
-      this.errorMessage = 'يرجى إدخال رابط صحيح يبدأ بـ https://';
-      return;
-    }
-
-    if (!isYouTube && !isDrive && !isVimeo && !isDirect) {
+    // Use the same strict HTTPS/provider allowlist as the player.
+    const parsed = parseSupportedVideoUrl(trimmed);
+    if (!parsed || parsed.type === 'hosted') {
       this.errorMessage = 'يُدعم: YouTube — Google Drive — Vimeo — ملف MP4 مباشر';
       return;
     }

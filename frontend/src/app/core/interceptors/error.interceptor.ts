@@ -1,23 +1,32 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { APP_CONFIG } from '../config/app-config';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const config = inject(APP_CONFIG);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const requestUrl = new URL(req.url, typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
-      const isSameOriginApi = typeof window !== 'undefined' && requestUrl.origin === window.location.origin && requestUrl.pathname.startsWith('/api/');
-      if (isSameOriginApi && error.status === 401) {
-        // A forbidden response can be a valid authenticated user lacking permission.
-        if (authService.isLoggedIn()) {
-          authService.logout();
-          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
-        }
+      const baseOrigin = config.apiBaseUrl
+        ? new URL(config.apiBaseUrl).origin
+        : (typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+      const requestUrl = new URL(req.url, baseOrigin);
+      const isApiRequest = typeof window !== 'undefined' && requestUrl.origin === baseOrigin && requestUrl.pathname.startsWith('/api/');
+      const isAuthEndpoint = requestUrl.pathname.startsWith('/api/v1/auth/');
+      if (isApiRequest && error.status === 401 && !isAuthEndpoint && authService.isLoggedIn()) {
+        return authService.refreshSession().pipe(
+          catchError(() => {
+            authService.clearSession();
+            router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
+            return throwError(() => error);
+          }),
+          switchMap(() => next(req.clone({ withCredentials: true })))
+        );
       }
       return throwError(() => error);
     })

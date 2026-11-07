@@ -33,8 +33,7 @@ export interface User {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  token?: string;
+  accessToken?: never;
   userId: number;
   fullName: string;
   email: string;

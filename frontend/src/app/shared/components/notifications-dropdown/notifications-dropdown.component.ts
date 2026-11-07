@@ -9,7 +9,7 @@ import { NotificationItem } from '../../../core/models/models';
   imports: [CommonModule],
   template: `
     <div class="notifications-wrapper position-relative">
-      <button type="button" (click)="toggleDropdown()" class="btn-notif-bell">
+      <button type="button" (click)="toggleDropdown()" class="btn-notif-bell" [attr.aria-expanded]="isOpen()" aria-label="الإشعارات">
         <i class="fa-solid fa-bell"></i>
         <span class="notif-label">الإشعارات</span>
         @if (unreadCount() > 0) {
@@ -30,7 +30,14 @@ import { NotificationItem } from '../../../core/models/models';
             }
           </div>
 
-          @if (notifications().length === 0) {
+          @if (notificationService.loadErrorSignal()) {
+            <div class="text-warning text-xs py-2" role="alert">
+              {{ notificationService.loadErrorSignal() }}
+              <button type="button" class="btn-text text-primary" (click)="notificationService.loadNotifications()">إعادة المحاولة</button>
+            </div>
+          }
+
+          @if (notifications().length === 0 && !notificationService.loadErrorSignal()) {
             <div class="py-4 text-center text-muted text-xs">
               <i class="fa-solid fa-bell-slash text-lg mb-1 d-block opacity-50"></i>
               لا توجد إشعارات جديدة حتى الآن

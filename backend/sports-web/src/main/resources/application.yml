@@ -67,7 +67,10 @@ app:
       signed-url-ttl-seconds: ${VIDEO_S3_URL_TTL:3600}
   jwt:
     secret: ${JWT_SECRET:}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    expiration-ms: ${JWT_ACCESS_TTL_MS:600000}
+  auth:
+    refresh-ttl-seconds: ${AUTH_REFRESH_TTL_SECONDS:2592000}
+    cookie-secure: ${AUTH_COOKIE_SECURE:false}
   gemini:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-2.0-flash}

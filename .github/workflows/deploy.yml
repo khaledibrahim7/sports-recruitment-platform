@@ -29,9 +29,14 @@ jobs:
 
       - name: Install dependencies and build
         working-directory: frontend
+        env:
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: |
           npm ci
-          npm run build -- --configuration production --base-href "/sports-recruitment-platform/"
+          node -e "require('node:fs').writeFileSync('public/app-config.js', 'window.__APP_CONFIG__ = ' + JSON.stringify({ apiBaseUrl: process.env.API_BASE_URL || '', sentryDsn: process.env.SENTRY_DSN || '', environment: 'production' }) + ';')"
+          npm run build -- --base-href "/sports-recruitment-platform/"
+          cp dist/frontend/browser/index.html dist/frontend/browser/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

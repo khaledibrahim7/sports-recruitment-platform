@@ -24,7 +24,7 @@
           <div class="glass-card club-card">
             <div class="club-logo">
               @if (club.logoUrl) {
-                <img [src]="club.logoUrl" [alt]="club.clubName" />
+                <img [src]="mediaUrl(club.logoUrl)" [alt]="club.clubName" />
               } @else {
                 <i class="fa-solid fa-shield-halved"></i>
               }

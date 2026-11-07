@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, PlayerPosition, PlayerProfile, PlayerSearchPage, PublicPlayerProfile } from '../models/models';
+import { Inject } from '@angular/core';
+import { APP_CONFIG, AppConfig } from '../config/app-config';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +11,7 @@ import { ApiResponse, PlayerPosition, PlayerProfile, PlayerSearchPage, PublicPla
 export class PlayerService {
   private readonly API_URL = '/api/v1/players';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(APP_CONFIG) private config: AppConfig) {}
 
   public getPlayers(
     position?: PlayerPosition | '',
@@ -52,7 +54,24 @@ export class PlayerService {
     return this.http.post<ApiResponse<{ key: string; uploadUrl: string; contentType: string; maxBytes: number }>>(`${this.API_URL}/me/videos/upload-url`, null, { params });
   }
 
-  public uploadVideoToStorage(uploadUrl: string, file: File, contentType: string): Observable<unknown> {
+  public createImageUploadUrl(file: File): Observable<ApiResponse<{ key: string; uploadUrl: string; contentType: string; maxBytes: number }>> {
+    const params = new HttpParams().set('filename', file.name).set('contentType', file.type);
+    return this.http.post<ApiResponse<{ key: string; uploadUrl: string; contentType: string; maxBytes: number }>>('/api/v1/profile-media/images/upload-url', null, { params });
+  }
+
+  public confirmImageUpload(key: string): Observable<ApiResponse<string>> {
+    const params = new HttpParams().set('key', key);
+    return this.http.post<ApiResponse<string>>('/api/v1/profile-media/images/confirm', null, { params });
+  }
+
+  public imageUrl(value?: string | null): string {
+    if (!value) return 'default-avatar.png';
+    if (!value.startsWith('platform-image:')) return value;
+    const key = value.substring('platform-image:'.length);
+    return `${this.config.apiBaseUrl || ''}/api/v1/profile-media/images?key=${encodeURIComponent(key)}`;
+  }
+
+  public uploadFileToStorage(uploadUrl: string, file: File, contentType: string): Observable<unknown> {
     return this.http.put(uploadUrl, file, { headers: { 'Content-Type': contentType }, responseType: 'text' });
   }
 
@@ -62,7 +81,8 @@ export class PlayerService {
   }
 
   public resolveVideoUrl(key: string): Observable<ApiResponse<string>> {
-    return this.http.get<ApiResponse<string>>(`${this.API_URL}/videos/${key}`);
+    const params = new HttpParams().set('key', key);
+    return this.http.get<ApiResponse<string>>(`${this.API_URL}/videos`, { params });
   }
 
   public deleteUploadedVideo(key: string): Observable<ApiResponse<void>> {

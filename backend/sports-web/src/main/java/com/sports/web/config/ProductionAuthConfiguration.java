@@ -61,6 +61,16 @@ public class ProductionAuthConfiguration {
                     || jwtSecret.toLowerCase(java.util.Locale.ROOT).contains("minimumthirtytwo")) {
                 throw new IllegalStateException("JWT_SECRET must be a unique secret of at least 32 bytes");
             }
+            boolean secureCookies = environment.getProperty("app.auth.cookie-secure", Boolean.class, false);
+            long accessTtlMillis = environment.getProperty("app.jwt.expiration-ms", Long.class, 600_000L);
+            long refreshTtlSeconds = environment.getProperty("app.auth.refresh-ttl-seconds", Long.class, 2_592_000L);
+            if (!secureCookies) throw new IllegalStateException("AUTH_COOKIE_SECURE must be true outside local/test profiles");
+            if (accessTtlMillis < 60_000 || accessTtlMillis > 900_000) {
+                throw new IllegalStateException("JWT_ACCESS_TTL_MS must be between 1 and 15 minutes");
+            }
+            if (refreshTtlSeconds < 86_400 || refreshTtlSeconds > 7_776_000) {
+                throw new IllegalStateException("AUTH_REFRESH_TTL_SECONDS must be between 1 and 90 days");
+            }
 
             URI publicUri = parseUri(publicUrl, "APP_PUBLIC_URL");
             if (!"https".equalsIgnoreCase(publicUri.getScheme()) || publicUri.getHost() == null

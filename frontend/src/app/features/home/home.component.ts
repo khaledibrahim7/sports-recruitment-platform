@@ -1,4 +1,6 @@
-import { Component, OnInit, computed } from '@angular/core';
+import { Component, OnInit, computed, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -16,6 +18,9 @@ import { VideoModalComponent } from '../../shared/components/video-modal/video-m
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
   public isLoggedIn = computed(() => this.authService.isLoggedIn());
   public currentUser = computed(() => this.authService.currentUserSignal());
 
@@ -28,6 +33,8 @@ export class HomeComponent implements OnInit {
 
   public featuredPlayers: PublicPlayerProfile[] = [];
   public registeredPlayerCount = 0;
+  public isLoadingFeatured = false;
+  public featuredLoadError = '';
   public featuredAcademies: AcademyProfile[] = [];
   public featuredClubs: ClubProfile[] = [];
   public playerPositionLabels = PlayerPositionLabels;
@@ -35,6 +42,8 @@ export class HomeComponent implements OnInit {
   public get spotlightPlayer(): PublicPlayerProfile | null {
     return this.featuredPlayers && this.featuredPlayers.length > 0 ? this.featuredPlayers[0] : null;
   }
+
+  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
   // Video Modal State
   public isVideoModalOpen = false;
@@ -50,7 +59,11 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadFeaturedData();
+    this.title.setTitle('الكورة لعبتنا | اكتشاف المواهب الرياضية');
+    this.meta.updateTag({ name: 'description', content: 'منصة تربط لاعبي كرة القدم بالأكاديميات والأندية، مع ملفات فنية وبدنية وفرص معايشة.' });
+    this.meta.updateTag({ property: 'og:title', content: 'الكورة لعبتنا | اكتشاف المواهب الرياضية' });
+    this.meta.updateTag({ property: 'og:description', content: 'اكتشف المواهب وتصفح الملفات الفنية للاعبين.' });
+    if (isPlatformBrowser(this.platformId)) this.loadFeaturedData();
   }
 
   public openVideo(player: PublicPlayerProfile): void {
@@ -70,25 +83,42 @@ export class HomeComponent implements OnInit {
     this.isVideoModalOpen = false;
   }
 
+  public reloadFeaturedData(): void {
+    this.featuredPlayers = [];
+    this.registeredPlayerCount = 0;
+    this.featuredAcademies = [];
+    this.featuredClubs = [];
+    this.loadFeaturedData();
+  }
+
   private loadFeaturedData(): void {
+    this.isLoadingFeatured = true;
+    this.featuredLoadError = '';
+    let completed = 0;
+    const finish = (failed: boolean) => {
+      if (failed) this.featuredLoadError = 'تعذر تحميل بعض بيانات المنصة. تحقق من الاتصال ثم أعد المحاولة.';
+      completed += 1;
+      if (completed === 3) this.isLoadingFeatured = false;
+    };
     this.playerService.getPlayers('', null, '', 0, 6).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.featuredPlayers = res.data.items;
           this.registeredPlayerCount = res.data.totalElements;
-        }
+          finish(false);
+        } else finish(true);
       },
-      error: () => {}
+      error: () => finish(true)
     });
 
     this.academyService.getAcademies().subscribe({
-      next: (res) => { if (res.success && res.data) this.featuredAcademies = res.data; },
-      error: () => {}
+      next: (res) => { if (res.success && res.data) { this.featuredAcademies = res.data; finish(false); } else finish(true); },
+      error: () => finish(true)
     });
 
     this.clubService.getClubs().subscribe({
-      next: (res) => { if (res.success && res.data) this.featuredClubs = res.data; },
-      error: () => {}
+      next: (res) => { if (res.success && res.data) { this.featuredClubs = res.data; finish(false); } else finish(true); },
+      error: () => finish(true)
     });
   }
 }

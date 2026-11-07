@@ -76,9 +76,9 @@ public class PlayerProfileController {
                 playerProfileService.createOrUpdateProfile(principal.getId(), request)));
     }
 
-    @GetMapping("/videos/{key:.+}")
+    @GetMapping("/videos")
     @Operation(summary = "Resolve a hosted video to a short-lived playback URL")
-    public ResponseEntity<ApiResponse<String>> getVideoUrl(@PathVariable("key") String key) {
+    public ResponseEntity<ApiResponse<String>> getVideoUrl(@RequestParam String key) {
         return ResponseEntity.ok(ApiResponse.ok("Video playback URL", videoStorageService.createPlaybackUrl(key)));
     }
 

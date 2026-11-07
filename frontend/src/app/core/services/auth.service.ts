@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { ApiResponse, AuthResponse } from '../models/models';
 
 @Injectable({
@@ -9,9 +9,10 @@ import { ApiResponse, AuthResponse } from '../models/models';
 export class AuthService {
   private readonly API_URL = '/api/v1/auth';
 
-  public currentUserSignal = signal<AuthResponse | null>(this.getStoredAuth());
+  public currentUserSignal = signal<AuthResponse | null>(null);
   public isLoggedIn = computed(() => !!this.currentUserSignal());
   public userRole = computed(() => this.currentUserSignal()?.role || null);
+  private refreshInFlight: Observable<ApiResponse<AuthResponse>> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -46,12 +47,42 @@ export class AuthService {
   }
 
   public logout(): void {
-    localStorage.removeItem('sports_auth_data');
+    this.http.post<void>(`${this.API_URL}/logout`, {}, { withCredentials: true }).subscribe({ error: () => undefined });
+    this.clearSession();
+  }
+
+  public clearSession(): void {
     this.currentUserSignal.set(null);
   }
 
   public getToken(): string | null {
-    return this.currentUserSignal()?.accessToken || null;
+    // Access and refresh tokens are HttpOnly cookies. JavaScript must never read them.
+    return null;
+  }
+
+  public restoreSession(): Observable<null> {
+    return this.refreshSession().pipe(
+      map(() => null),
+      catchError(() => { this.currentUserSignal.set(null); return of(null); })
+    );
+  }
+
+  public refreshSession(): Observable<ApiResponse<AuthResponse>> {
+    if (this.refreshInFlight) return this.refreshInFlight;
+    const request = this.http.post<ApiResponse<AuthResponse>>(`${this.API_URL}/refresh`, {}, { withCredentials: true }).pipe(
+      tap(res => {
+        if (!res.success || !res.data) throw new Error('Session refresh returned no user');
+        this.currentUserSignal.set(res.data);
+      }),
+      catchError(error => {
+        this.currentUserSignal.set(null);
+        return throwError(() => error);
+      }),
+      finalize(() => { this.refreshInFlight = null; }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.refreshInFlight = request;
+    return request;
   }
 
   public updateProfileInSession(profileData: any): void {
@@ -63,16 +94,7 @@ export class AuthService {
   }
 
   private setSession(authData: AuthResponse): void {
-    localStorage.setItem('sports_auth_data', JSON.stringify(authData));
     this.currentUserSignal.set(authData);
   }
 
-  private getStoredAuth(): AuthResponse | null {
-    try {
-      const data = localStorage.getItem('sports_auth_data');
-      return data ? JSON.parse(data) : null;
-    } catch {
-      return null;
-    }
-  }
 }

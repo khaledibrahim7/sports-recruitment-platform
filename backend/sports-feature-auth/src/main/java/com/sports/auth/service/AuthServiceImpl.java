@@ -5,7 +5,6 @@ import com.sports.auth.dto.AuthResponse;
 import com.sports.auth.dto.LoginRequest;
 import com.sports.auth.dto.RegisterRequest;
 import com.sports.auth.repository.UserRepository;
-import com.sports.common.security.JwtTokenProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,16 +20,13 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           AuthenticationManager authenticationManager,
-                           JwtTokenProvider tokenProvider) {
+                           AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
-        this.tokenProvider = tokenProvider;
     }
 
     @Override
@@ -84,11 +80,9 @@ public class AuthServiceImpl implements AuthService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = tokenProvider.generateToken(authentication);
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+        return new AuthResponse(null, user.getId(), user.getEmail(), user.getFullName(), user.getRole());
     }
 }

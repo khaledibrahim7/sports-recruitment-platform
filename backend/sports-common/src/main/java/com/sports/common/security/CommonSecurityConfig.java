@@ -156,6 +156,7 @@ public class CommonSecurityConfig {
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/players/videos/**",
                     "/api/v1/players/**",
+                    "/api/v1/profile-media/images",
                     "/api/v1/academies",
                     "/api/v1/academies/{id}",
                     "/api/v1/clubs",

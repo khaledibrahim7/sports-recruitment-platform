@@ -1,5 +1,6 @@
-import { Component, OnInit, computed } from '@angular/core';
+import { Component, OnInit, computed, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { VisitorService } from '../../../core/services/visitor.service';
@@ -14,6 +15,7 @@ import { NotificationsDropdownComponent } from '../notifications-dropdown/notifi
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   public isLoggedIn = computed(() => this.authService.isLoggedIn());
   public currentUser = computed(() => this.authService.currentUserSignal());
   public visitorCount = computed(() => this.visitorService.visitorCountSignal());
@@ -25,6 +27,7 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.visitorService.registerVisit().subscribe({
       error: () => {
         this.visitorService.getVisitorCount().subscribe();

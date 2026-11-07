@@ -1,22 +1,13 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { APP_CONFIG } from '../config/app-config';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const token = authService.getToken();
-
-  const requestUrl = new URL(req.url, typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
-  const isSameOriginApi = typeof window !== 'undefined' && requestUrl.origin === window.location.origin && requestUrl.pathname.startsWith('/api/');
-
-  if (token && isSameOriginApi) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    return next(cloned);
-  }
-
-  return next(req);
+  const config = inject(APP_CONFIG);
+  if (!req.url.startsWith('/api/')) return next(req);
+  if (typeof window === 'undefined' && !config.apiBaseUrl) return next(req);
+  const baseOrigin = config.apiBaseUrl || window.location.origin;
+  const target = new URL(req.url, baseOrigin);
+  const cloned = req.clone({ url: target.toString(), withCredentials: true });
+  return next(cloned);
 };

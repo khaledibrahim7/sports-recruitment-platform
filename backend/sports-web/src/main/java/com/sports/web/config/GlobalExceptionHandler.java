@@ -13,6 +13,7 @@ import org.springframework.security.authentication.DisabledException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -70,6 +71,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 "RESOURCE_NOT_FOUND",
                 ex.getMessage(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleRouteNotFound(NoResourceFoundException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "ROUTE_NOT_FOUND",
+                "The requested endpoint was not found",
                 null
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

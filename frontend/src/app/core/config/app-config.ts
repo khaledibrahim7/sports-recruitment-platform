@@ -10,6 +10,8 @@ import { InjectionToken } from '@angular/core';
  */
 export interface AppConfig {
   apiBaseUrl: string;
+  sentryDsn?: string;
+  environment?: string;
 }
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');
@@ -19,8 +21,25 @@ export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');
  * Falls back to empty string so all requests go through the Angular dev proxy.
  */
 export function appConfigFactory(): AppConfig {
-  const win = window as unknown as { __APP_CONFIG__?: AppConfig };
+  const win = typeof window === 'undefined' ? undefined : window as Window & { __APP_CONFIG__?: AppConfig };
+  const runtime = win?.__APP_CONFIG__ ?? (typeof process === 'undefined' ? undefined : {
+    apiBaseUrl: process.env['API_BASE_URL'],
+    sentryDsn: process.env['SENTRY_DSN'],
+    environment: process.env['NODE_ENV'],
+  });
+  let apiBaseUrl = '';
+  try {
+    const candidate = runtime?.apiBaseUrl?.trim();
+    if (candidate) {
+      const parsed = new URL(candidate);
+      if ((parsed.protocol === 'https:' || (parsed.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsed.hostname)))
+        && !parsed.username && !parsed.password && !parsed.search && !parsed.hash
+        && (!parsed.pathname || parsed.pathname === '/')) apiBaseUrl = parsed.origin;
+    }
+  } catch { /* Invalid API configuration falls back to the same-origin proxy. */ }
   return {
-    apiBaseUrl: win.__APP_CONFIG__?.apiBaseUrl ?? ''
+    apiBaseUrl,
+    sentryDsn: runtime?.sentryDsn,
+    environment: runtime?.environment
   };
 }

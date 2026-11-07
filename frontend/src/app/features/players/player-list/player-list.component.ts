@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
@@ -12,11 +14,14 @@ import { TrialOfferModalComponent } from '../../../shared/components/trial-offer
 @Component({
   selector: 'app-player-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, VideoModalComponent, RadarChartComponent, TrialOfferModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, VideoModalComponent, RadarChartComponent, TrialOfferModalComponent],
   templateUrl: './player-list.component.html',
   styleUrls: ['./player-list.component.scss']
 })
 export class PlayerListComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
   public players: PublicPlayerProfile[] = [];
   public selectedPosition: PlayerPosition | '' = '';
   public searchQuery = '';
@@ -31,6 +36,8 @@ export class PlayerListComponent implements OnInit {
   public get filteredPlayers(): PublicPlayerProfile[] {
     return this.players;
   }
+
+  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
   public playerPositions = Object.keys(PlayerPositionLabels) as PlayerPosition[];
   public playerPositionLabels = PlayerPositionLabels;
@@ -81,6 +88,9 @@ export class PlayerListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.title.setTitle('دليل اللاعبين | الكورة لعبتنا');
+    this.meta.updateTag({ name: 'description', content: 'ابحث في ملفات اللاعبين المسجلين حسب المركز والعمر والمهارات.' });
+    if (!isPlatformBrowser(this.platformId)) return;
     this.loadPlayers();
     if (this.canBookmark()) {
       this.bookmarkService.loadBookmarkedIds();

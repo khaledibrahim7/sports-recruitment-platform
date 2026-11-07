@@ -2,7 +2,7 @@
   <div class="container">
     <div class="page-header">
       <span class="badge badge-academy mb-2"><i class="fa-solid fa-graduation-cap"></i> دليل الأكاديميات</span>
-      <h1>الأكاديميات الرياضية المعتمدة</h1>
+      <h1>الأكاديميات الرياضية المسجلة</h1>
       <p>تصفح قائمة الأكاديميات الرياضية وزر صفحاتها الرسمية للتسجيل والتدريب</p>
     </div>
 
@@ -24,7 +24,7 @@
           <div class="glass-card academy-card">
             <div class="academy-logo">
               @if (academy.logoUrl) {
-                <img [src]="academy.logoUrl" [alt]="academy.academyName" />
+                <img [src]="mediaUrl(academy.logoUrl)" [alt]="academy.academyName" />
               } @else {
                 <i class="fa-solid fa-graduation-cap"></i>
               }

@@ -1,0 +1,65 @@
+<main class="public-profile page-container section-padding">
+  <div class="container">
+    <a routerLink="/players" class="back-link"><i class="fa-solid fa-arrow-right"></i> العودة لدليل اللاعبين</a>
+
+    @if (isLoading) {
+      <div class="profile-state" role="status">جارٍ تحميل ملف اللاعب…</div>
+    } @else if (loadError) {
+      <div class="profile-state" role="alert">
+        <h1>ملف اللاعب</h1>
+        <p>{{ loadError }}</p>
+        <a routerLink="/players" class="btn btn-primary">دليل اللاعبين</a>
+      </div>
+    } @else if (player) {
+      <article class="glass-card profile-card">
+        <header class="player-heading">
+          <img [src]="imageUrl(player.avatarUrl)" [alt]="'صورة ' + player.fullName" class="avatar" />
+          <div class="heading-copy">
+            <span class="badge badge-player">{{ positions[player.position].ar }}</span>
+            <h1>{{ player.fullName }}</h1>
+            <p>{{ player.cityCountry || 'الموقع غير محدد' }} @if (player.currentTeam) { · {{ player.currentTeam }} }</p>
+          </div>
+          <button type="button" class="btn btn-primary" (click)="openVideo()" [disabled]="!player.videoUrls?.length && !player.videoUrl">
+            <i class="fa-solid fa-circle-play"></i> مشاهدة المقاطع
+          </button>
+        </header>
+
+        @if (player.bio) {
+          <section class="bio-section">
+            <h2>نبذة اللاعب</h2>
+            <p>{{ player.bio }}</p>
+          </section>
+        }
+
+        <section class="measurements" aria-label="البيانات الرياضية">
+          <div><span>العمر</span><strong>{{ player.age }} سنة</strong></div>
+          <div><span>الطول</span><strong>{{ player.heightCm ?? '—' }} سم</strong></div>
+          <div><span>الوزن</span><strong>{{ player.weightKg ?? '—' }} كجم</strong></div>
+          <div><span>القدم المفضلة</span><strong>{{ player.preferredFoot || '—' }}</strong></div>
+          <div><span>الفريق الحالي</span><strong>{{ player.currentTeam || '—' }}</strong></div>
+          <div><span>مستوى المنافسة</span><strong>{{ player.competitionLevel || '—' }}</strong></div>
+        </section>
+
+        <section class="skills-section">
+          <h2>المؤشرات الفنية والبدنية</h2>
+          <app-radar-chart
+            [pace]="player.pace ?? 75"
+            [shooting]="player.shooting ?? 70"
+            [passing]="player.passing ?? 70"
+            [dribbling]="player.dribbling ?? 75"
+            [defending]="player.defending ?? 65"
+            [physicality]="player.physicality ?? 70"
+          ></app-radar-chart>
+        </section>
+      </article>
+
+      <app-video-modal
+        [isOpen]="isVideoOpen"
+        [videoUrl]="player.videoUrl || ''"
+        [videoUrls]="player.videoUrls || []"
+        [playerName]="player.fullName"
+        (close)="isVideoOpen = false"
+      ></app-video-modal>
+    }
+  </div>
+</main>

@@ -60,7 +60,7 @@ if ($existing) {
 }
 
 # ── 3. مسار الـ JAR ─────────────────────────────────────────
-$jarPath   = Join-Path $scriptDir "backend\sports-web\target\sports-web-1.0.0.jar"
+$jarPath   = Join-Path $scriptDir "backend\sports-web\target\sports-web-1.0.0-boot.jar"
 $frontendPath = Join-Path $scriptDir "frontend"
 
 if (-not (Test-Path $jarPath)) {

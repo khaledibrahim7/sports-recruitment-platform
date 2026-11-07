@@ -16,7 +16,7 @@ interface ChatMessage {
   imports: [CommonModule, FormsModule],
   template: `
     <!-- Floating Toggle Button -->
-    <button class="ai-fab" (click)="toggleChat()" [class.active]="isOpen()">
+    <button class="ai-fab" (click)="toggleChat()" [class.active]="isOpen()" [attr.aria-expanded]="isOpen()" aria-label="مساعد التكشيف الذكي">
       @if (!isOpen()) {
         @if (!avatarError()) {
           <img src="images/kashif-avatar.png"
@@ -37,7 +37,7 @@ interface ChatMessage {
 
     <!-- Chat Panel -->
     @if (isOpen()) {
-      <div class="ai-chat-panel" [class.open]="isOpen()">
+      <div class="ai-chat-panel" [class.open]="isOpen()" role="dialog" aria-modal="false" aria-label="محادثة كاشف الذكي">
 
         <!-- Header -->
         <div class="chat-header">
@@ -101,7 +101,7 @@ interface ChatMessage {
                     <span></span><span></span><span></span>
                   </div>
                 } @else {
-                  <span [innerHTML]="formatText(msg.text)"></span>
+                  <span class="message-text">{{ msg.text }}</span>
                 }
                 <div class="msg-time">{{ msg.timestamp | date:'HH:mm' }}</div>
               </div>
@@ -389,15 +389,6 @@ export class AiChatWidgetComponent implements AfterViewChecked {
         this.isLoading.set(false);
       }
     });
-  }
-
-  formatText(text: string): string {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/①|②|③|④|⑤|⑥/g, m => `<br><strong>${m}</strong>`)
-      .replace(/━━.*?━━/g, m => `<strong style="color:#00ff87">${m}</strong>`)
-      .replace(/\n/g, '<br>');
   }
 
   ngAfterViewChecked(): void {

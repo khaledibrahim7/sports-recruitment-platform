@@ -5,7 +5,6 @@
       <p>أنشئ حسابك وابدأ ملفك الرياضي بخطوات واضحة وآمنة</p>
     </div>
 
-    <!-- Role Selector -->
     <div class="role-selector-tabs mb-4" aria-label="نوع الحساب">
       <button type="button" [class.active]="selectedRole === 'PLAYER'" (click)="selectRole('PLAYER')" class="role-tab player">
         <i class="fa-solid fa-person-running"></i><span>لاعب</span>
@@ -18,7 +17,6 @@
       </button>
     </div>
 
-    <!-- Player Progress Steps -->
     @if (selectedRole === 'PLAYER') {
       <div class="registration-progress" aria-label="خطوات التسجيل">
         <div class="progress-step" [class.active]="step === 1" [class.complete]="step === 2"><span>1</span><strong>بيانات اللاعب</strong></div>
@@ -38,10 +36,6 @@
     }
 
     <form (ngSubmit)="onSubmit()" class="auth-form" #registerForm="ngForm">
-
-      <!-- ══════════════════════════════════════
-           PLAYER — Step 1: Sport Data
-      ══════════════════════════════════════ -->
       @if (selectedRole !== 'PLAYER' || step === 1) {
         @if (selectedRole === 'PLAYER') {
           <div class="registration-section-heading">
@@ -49,32 +43,25 @@
             <div><h3>بياناتك الرياضية</h3><p>المعلومات الأساسية التي تساعد الكشافين في العثور عليك</p></div>
           </div>
 
-          <!-- Birth date & Nationality -->
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="birthDate">تاريخ الميلاد <span class="required-mark">*</span></label>
-              <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate"
-                     [min]="minBirthDate" [max]="maxBirthDate" required autocomplete="bday" class="form-control" />
+              <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate" [min]="minBirthDate" [max]="maxBirthDate" required autocomplete="bday" class="form-control" />
             </div>
             <div class="form-group">
               <label for="nationality">الجنسية <span class="required-mark">*</span></label>
-              <input type="text" id="nationality" name="nationality" [(ngModel)]="nationality"
-                     required maxlength="80" autocomplete="country-name" placeholder="مثال: مصري" class="form-control" />
+              <input type="text" id="nationality" name="nationality" [(ngModel)]="nationality" required maxlength="80" autocomplete="country-name" placeholder="مثال: مصري" class="form-control" />
             </div>
           </div>
 
-          <!-- City & Phone -->
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="cityCountry">مدينة ودولة الإقامة <span class="required-mark">*</span></label>
-              <input type="text" id="cityCountry" name="cityCountry" [(ngModel)]="cityCountry"
-                     required maxlength="120" autocomplete="address-level2" placeholder="مثال: القاهرة، مصر" class="form-control" />
+              <input type="text" id="cityCountry" name="cityCountry" [(ngModel)]="cityCountry" required maxlength="120" autocomplete="address-level2" placeholder="مثال: القاهرة، مصر" class="form-control" />
             </div>
             <div class="form-group">
               <label for="phone">رقم الهاتف مع رمز الدولة <span class="required-mark">*</span></label>
-              <input type="tel" id="phone" name="phone" [(ngModel)]="phone"
-                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
-                     placeholder="مثال: +20 100 000 0000" class="form-control" />
+              <input type="tel" id="phone" name="phone" [(ngModel)]="phone" required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel" placeholder="مثال: +20 100 000 0000" class="form-control" />
             </div>
           </div>
 
@@ -103,7 +90,6 @@
             </label>
           }
 
-          <!-- Primary & Secondary Position -->
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="position">المركز الأساسي <span class="required-mark">*</span></label>
@@ -126,7 +112,6 @@
             </div>
           </div>
 
-          <!-- Preferred Foot, Height, Weight -->
           <div class="grid-3 mt-3">
             <div class="form-group">
               <label for="preferredFoot">القدم المفضلة <span class="required-mark">*</span></label>
@@ -139,22 +124,18 @@
             </div>
             <div class="form-group">
               <label for="heightCm">الطول (سم)</label>
-              <input type="number" id="heightCm" name="heightCm" [(ngModel)]="heightCm"
-                     min="100" max="230" inputmode="numeric" placeholder="مثال: 178" class="form-control" />
+              <input type="number" id="heightCm" name="heightCm" [(ngModel)]="heightCm" min="100" max="230" inputmode="numeric" placeholder="مثال: 178" class="form-control" />
             </div>
             <div class="form-group">
               <label for="weightKg">الوزن (كجم)</label>
-              <input type="number" id="weightKg" name="weightKg" [(ngModel)]="weightKg"
-                     min="30" max="200" inputmode="numeric" placeholder="مثال: 72" class="form-control" />
+              <input type="number" id="weightKg" name="weightKg" [(ngModel)]="weightKg" min="30" max="200" inputmode="numeric" placeholder="مثال: 72" class="form-control" />
             </div>
           </div>
 
-          <!-- Current Team & Competition Level -->
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="currentTeam">النادي أو الأكاديمية الحالية</label>
-              <input type="text" id="currentTeam" name="currentTeam" [(ngModel)]="currentTeam"
-                     maxlength="120" placeholder="اسم النادي أو الأكاديمية" class="form-control" />
+              <input type="text" id="currentTeam" name="currentTeam" [(ngModel)]="currentTeam" maxlength="120" placeholder="اسم النادي أو الأكاديمية" class="form-control" />
             </div>
             <div class="form-group">
               <label for="competitionLevel">مستوى المنافسة</label>
@@ -168,21 +149,16 @@
             </div>
           </div>
 
-          <!-- رابط الفيديو -->
           <div class="form-group mt-3">
             <label for="videoUrl">رابط فيديو أداء</label>
-            <input type="url" id="videoUrl" name="videoUrl" [(ngModel)]="videoUrl"
-                   maxlength="500" placeholder="YouTube أو Vimeo أو رابط مباشر MP4" class="form-control" />
+            <input type="url" id="videoUrl" name="videoUrl" [(ngModel)]="videoUrl" maxlength="500" placeholder="YouTube أو Vimeo أو رابط مباشر MP4" class="form-control" />
           </div>
 
-          <!-- نبذة رياضية -->
           <div class="form-group mt-3">
             <label for="bio">نبذة رياضية قصيرة</label>
-            <textarea id="bio" name="bio" [(ngModel)]="bio" maxlength="1000" rows="3"
-                      placeholder="خبرتك الرياضية، إنجازاتك، وما تبحث عنه" class="form-control"></textarea>
+            <textarea id="bio" name="bio" [(ngModel)]="bio" maxlength="1000" rows="3" placeholder="خبرتك الرياضية، إنجازاتك، وما تبحث عنه" class="form-control"></textarea>
           </div>
 
-          <!-- ── NEW: هدف التسجيل ── -->
           <div class="form-group mt-3">
             <label for="playerGoal">هدفك من التسجيل في المنصة <span class="required-mark">*</span></label>
             <select id="playerGoal" name="playerGoal" [(ngModel)]="playerGoal" required class="form-select">
@@ -195,7 +171,6 @@
             </select>
           </div>
 
-          <!-- ── NEW: متاح للانتقال ── -->
           <div class="toggle-field mt-3">
             <div class="toggle-field-info">
               <span class="toggle-field-label">متاح للانتقال أو الانضمام الآن</span>
@@ -203,9 +178,7 @@
             </div>
             <label class="toggle-switch">
               <input type="checkbox" name="availableForTransfer" [(ngModel)]="availableForTransfer" />
-              <span class="toggle-track">
-                <span class="toggle-thumb"></span>
-              </span>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
             </label>
           </div>
 
@@ -213,9 +186,6 @@
             متابعة إلى بيانات الحساب <i class="fa-solid fa-arrow-left"></i>
           </button>
 
-        <!-- ══════════════════════════════════════
-             ACADEMY Fields
-        ══════════════════════════════════════ -->
         } @else if (selectedRole === 'ACADEMY') {
           <div class="registration-section-heading">
             <i class="fa-solid fa-graduation-cap"></i>
@@ -224,29 +194,24 @@
 
           <div class="form-group">
             <label for="organizationName">اسم الأكاديمية الرسمي <span class="required-mark">*</span></label>
-            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName"
-                   required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
+            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName" required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
           </div>
 
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="organizationCity">المقر: المدينة والدولة <span class="required-mark">*</span></label>
-              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity"
-                     required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
+              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity" required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
             </div>
             <div class="form-group">
               <label for="organizationPhone">رقم هاتف الأكاديمية <span class="required-mark">*</span></label>
-              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone"
-                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
-                     placeholder="مثال: +20 2 0000 0000" class="form-control" />
+              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone" required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel" placeholder="مثال: +20 2 0000 0000" class="form-control" />
             </div>
           </div>
 
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="organizationWebsite">الموقع الإلكتروني أو الصفحة الرسمية</label>
-              <input type="url" id="organizationWebsite" name="organizationWebsite" [(ngModel)]="organizationWebsite"
-                     maxlength="500" placeholder="https://example.com" class="form-control" />
+              <input type="url" id="organizationWebsite" name="organizationWebsite" [(ngModel)]="organizationWebsite" maxlength="500" placeholder="https://example.com" class="form-control" />
             </div>
             <div class="form-group">
               <label for="academyTrainingType">نوع التدريب المقدَّم</label>
@@ -260,31 +225,20 @@
             </div>
           </div>
 
-          <!-- ── NEW: الفئات العمرية ── -->
           <div class="form-group mt-3">
             <label>الفئات العمرية المقبولة</label>
             <div class="chip-group">
               @for (group of ageGroups; track group) {
-                <button type="button"
-                        class="chip"
-                        [class.selected]="isAgeGroupSelected(group)"
-                        (click)="toggleAgeGroup(group)">
-                  {{ group }}
-                </button>
+                <button type="button" class="chip" [class.selected]="isAgeGroupSelected(group)" (click)="toggleAgeGroup(group)">{{ group }}</button>
               }
             </div>
           </div>
 
           <div class="form-group mt-3">
             <label for="organizationDescription">نبذة عن الأكاديمية</label>
-            <textarea id="organizationDescription" name="organizationDescription" [(ngModel)]="organizationDescription"
-                      maxlength="2000" rows="3"
-                      placeholder="الفئات العمرية، التخصصات، ومعلومات تعريفية" class="form-control"></textarea>
+            <textarea id="organizationDescription" name="organizationDescription" [(ngModel)]="organizationDescription" maxlength="2000" rows="3" placeholder="الفئات العمرية، التخصصات، ومعلومات تعريفية" class="form-control"></textarea>
           </div>
 
-        <!-- ══════════════════════════════════════
-             CLUB Fields
-        ══════════════════════════════════════ -->
         } @else {
           <div class="registration-section-heading">
             <i class="fa-solid fa-shield-halved"></i>
@@ -293,29 +247,24 @@
 
           <div class="form-group">
             <label for="organizationName">اسم النادي الرسمي <span class="required-mark">*</span></label>
-            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName"
-                   required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
+            <input type="text" id="organizationName" name="organizationName" [(ngModel)]="organizationName" required minlength="2" maxlength="150" placeholder="اكتب الاسم كما يظهر للجمهور" class="form-control" />
           </div>
 
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="organizationCity">المقر: المدينة والدولة <span class="required-mark">*</span></label>
-              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity"
-                     required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
+              <input type="text" id="organizationCity" name="organizationCity" [(ngModel)]="organizationCity" required maxlength="120" placeholder="مثال: القاهرة، مصر" class="form-control" />
             </div>
             <div class="form-group">
               <label for="organizationPhone">رقم هاتف النادي <span class="required-mark">*</span></label>
-              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone"
-                     required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel"
-                     placeholder="مثال: +20 2 0000 0000" class="form-control" />
+              <input type="tel" id="organizationPhone" name="organizationPhone" [(ngModel)]="organizationPhone" required minlength="7" maxlength="20" autocomplete="tel" inputmode="tel" placeholder="مثال: +20 2 0000 0000" class="form-control" />
             </div>
           </div>
 
           <div class="grid-2 mt-3">
             <div class="form-group">
               <label for="clubWebsite">الموقع الإلكتروني أو الصفحة الرسمية</label>
-              <input type="url" id="clubWebsite" name="clubWebsite" [(ngModel)]="clubWebsite"
-                     maxlength="500" placeholder="https://example.com" class="form-control" />
+              <input type="url" id="clubWebsite" name="clubWebsite" [(ngModel)]="clubWebsite" maxlength="500" placeholder="https://example.com" class="form-control" />
             </div>
             <div class="form-group">
               <label for="clubLeagueLevel">المستوى التنافسي للنادي</label>
@@ -332,12 +281,9 @@
 
           <div class="form-group mt-3">
             <label for="clubDescription">وصف النادي ورؤيته الرياضية</label>
-            <textarea id="clubDescription" name="clubDescription" [(ngModel)]="clubDescription"
-                      maxlength="2000" rows="3"
-                      placeholder="تاريخ النادي، إنجازاته، وما يبحث عنه في اللاعبين" class="form-control"></textarea>
+            <textarea id="clubDescription" name="clubDescription" [(ngModel)]="clubDescription" maxlength="2000" rows="3" placeholder="تاريخ النادي، إنجازاته، وما يبحث عنه في اللاعبين" class="form-control"></textarea>
           </div>
 
-          <!-- ── NEW: يبحث عن لاعبين حالياً ── -->
           <div class="toggle-field mt-3">
             <div class="toggle-field-info">
               <span class="toggle-field-label">النادي يبحث عن لاعبين حالياً</span>
@@ -345,17 +291,12 @@
             </div>
             <label class="toggle-switch">
               <input type="checkbox" name="clubActivelyRecruiting" [(ngModel)]="clubActivelyRecruiting" />
-              <span class="toggle-track">
-                <span class="toggle-thumb"></span>
-              </span>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
             </label>
           </div>
         }
       }
 
-      <!-- ══════════════════════════════════════
-           Account Info (Step 2 for PLAYER, always for ACADEMY/CLUB)
-      ══════════════════════════════════════ -->
       @if (selectedRole !== 'PLAYER' || step === 2) {
         <div class="registration-section-heading mt-4">
           <i class="fa-solid fa-user-lock"></i>
@@ -367,31 +308,23 @@
 
         <div class="form-group">
           <label for="fullName">الاسم الكامل <span class="required-mark">*</span></label>
-          <input type="text" id="fullName" name="fullName" [(ngModel)]="fullName"
-                 required minlength="3" maxlength="100" autocomplete="name"
-                 placeholder="الاسم الأول واسم العائلة" class="form-control" />
+          <input type="text" id="fullName" name="fullName" [(ngModel)]="fullName" required minlength="3" maxlength="100" autocomplete="name" placeholder="الاسم الأول واسم العائلة" class="form-control" />
         </div>
 
         <div class="form-group mt-3">
           <label for="email">البريد الإلكتروني <span class="required-mark">*</span></label>
-          <input type="email" id="email" name="email" [(ngModel)]="email"
-                 required maxlength="150" autocomplete="email" inputmode="email" autocapitalize="off"
-                 placeholder="name@example.com" class="form-control" />
+          <input type="email" id="email" name="email" [(ngModel)]="email" required maxlength="150" autocomplete="email" inputmode="email" autocapitalize="off" placeholder="name@example.com" class="form-control" />
         </div>
 
         <div class="grid-2 mt-3">
           <div class="form-group">
             <label for="password">كلمة المرور <span class="required-mark">*</span></label>
-            <input type="password" id="password" name="password" [(ngModel)]="password"
-                   required minlength="12" maxlength="72" autocomplete="new-password"
-                   placeholder="12 حرفًا على الأقل" class="form-control" />
+            <input type="password" id="password" name="password" [(ngModel)]="password" required minlength="12" maxlength="72" autocomplete="new-password" placeholder="12 حرفًا على الأقل" class="form-control" />
             <small class="field-help">استخدم عبارة مرور طويلة لا تقل عن 12 حرفًا.</small>
           </div>
           <div class="form-group">
             <label for="confirmPassword">تأكيد كلمة المرور <span class="required-mark">*</span></label>
-            <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword"
-                   required minlength="12" maxlength="72" autocomplete="new-password"
-                   placeholder="أعد إدخال كلمة المرور" class="form-control" />
+            <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required minlength="12" maxlength="72" autocomplete="new-password" placeholder="أعد إدخال كلمة المرور" class="form-control" />
           </div>
         </div>
 

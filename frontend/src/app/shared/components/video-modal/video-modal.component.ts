@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -67,7 +67,18 @@ export class VideoModalComponent implements OnChanges {
   public showPoster = true;
   public currentThumbnail: string | null = null;
 
-  constructor(private sanitizer: DomSanitizer, private http: HttpClient) {}
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly http = inject(HttpClient);
+
+  public onPosterThumbError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (img) img.src = '';
+  }
+
+  public onPlaylistThumbError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    img?.parentElement?.classList.add('no-thumb');
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && this.isOpen) {

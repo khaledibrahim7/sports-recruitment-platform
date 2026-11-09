@@ -1,9 +1,9 @@
-import { ErrorHandler, Inject, Injectable } from '@angular/core';
-import { APP_CONFIG, AppConfig } from './config/app-config';
+import { ErrorHandler, Injectable, inject } from '@angular/core';
+import { APP_CONFIG } from './config/app-config';
 
 @Injectable()
 export class MonitoringErrorHandler implements ErrorHandler {
-  constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
+  private readonly config = inject(APP_CONFIG);
 
   handleError(error: unknown): void {
     console.error(error);

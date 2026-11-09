@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { AcademyProfile, ApiResponse } from '../models/models';
@@ -8,9 +8,8 @@ import { AcademyProfile, ApiResponse } from '../models/models';
 })
 export class AcademyService {
   private readonly API_URL = '/api/v1/academies';
+  private readonly http = inject(HttpClient);
   private academiesCache$: Observable<ApiResponse<AcademyProfile[]>> | null = null;
-
-  constructor(private http: HttpClient) {}
 
   public getAcademies(forceRefresh = false): Observable<ApiResponse<AcademyProfile[]>> {
     if (forceRefresh || !this.academiesCache$) {

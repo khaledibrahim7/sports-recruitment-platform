@@ -29,13 +29,14 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class VerifyAccountComponent implements OnInit {
   private readonly title = inject(Title);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   message = 'جارٍ التحقق من الرابط...';
   finished = false;
   canResend = false;
   resending = false;
   email = '';
-
-  constructor(private route: ActivatedRoute, private router: Router, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.title.setTitle('تأكيد الحساب | الكورة لعبتنا');

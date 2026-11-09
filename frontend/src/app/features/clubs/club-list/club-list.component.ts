@@ -19,11 +19,11 @@ export class ClubListComponent implements OnInit {
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly toastService = inject(ToastService);
+  private readonly clubService = inject(ClubService);
+  private readonly playerService = inject(PlayerService);
   public clubs: ClubProfile[] = [];
   public isLoading = false;
   public loadError = '';
-
-  constructor(private clubService: ClubService, private playerService: PlayerService) {}
 
   public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 

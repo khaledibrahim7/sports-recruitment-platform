@@ -9,14 +9,13 @@ import { ApiResponse, NotificationItem } from '../models/models';
 })
 export class NotificationService {
   private readonly API_URL = '/api/v1/notifications';
+  private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private pollingSub: Subscription | null = null;
 
   public unreadCountSignal = signal<number>(0);
   public notificationsSignal = signal<NotificationItem[]>([]);
   public loadErrorSignal = signal('');
-
-  constructor(private http: HttpClient) {}
 
   public startPolling(intervalMs = 60_000): void {
     if (!isPlatformBrowser(this.platformId)) return;

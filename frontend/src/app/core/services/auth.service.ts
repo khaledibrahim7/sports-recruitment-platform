@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { AcademyProfile, ApiResponse, AuthResponse, ClubProfile, PlayerProfile } from '../models/models';
@@ -12,9 +12,8 @@ export class AuthService {
   public currentUserSignal = signal<AuthResponse | null>(null);
   public isLoggedIn = computed(() => !!this.currentUserSignal());
   public userRole = computed(() => this.currentUserSignal()?.role || null);
+  private readonly http = inject(HttpClient);
   private refreshInFlight: Observable<ApiResponse<AuthResponse>> | null = null;
-
-  constructor(private http: HttpClient) {}
 
   public register(payload: Record<string, unknown>): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/register`, {

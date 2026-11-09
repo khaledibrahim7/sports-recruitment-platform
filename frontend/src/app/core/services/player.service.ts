@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { ApiResponse, PlayerPosition, PlayerProfile, PlayerSearchPage, PublicPlayerProfile } from '../models/models';
@@ -9,10 +9,10 @@ import { APP_CONFIG, AppConfig } from '../config/app-config';
 })
 export class PlayerService {
   private readonly API_URL = '/api/v1/players';
+  private readonly http = inject(HttpClient);
+  private readonly config: AppConfig = inject(APP_CONFIG);
   private readonly cache = new Map<string, { expiresAt: number; observable$: Observable<ApiResponse<PlayerSearchPage>> }>();
   private readonly CACHE_TTL_MS = 60_000;
-
-  constructor(private http: HttpClient, @Inject(APP_CONFIG) private config: AppConfig) {}
 
   public getPlayers(
     position?: PlayerPosition | '',

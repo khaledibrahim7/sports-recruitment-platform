@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { ApiResponse, ClubProfile } from '../models/models';
@@ -8,9 +8,8 @@ import { ApiResponse, ClubProfile } from '../models/models';
 })
 export class ClubService {
   private readonly API_URL = '/api/v1/clubs';
+  private readonly http = inject(HttpClient);
   private clubsCache$: Observable<ApiResponse<ClubProfile[]>> | null = null;
-
-  constructor(private http: HttpClient) {}
 
   public getClubs(forceRefresh = false): Observable<ApiResponse<ClubProfile[]>> {
     if (forceRefresh || !this.clubsCache$) {

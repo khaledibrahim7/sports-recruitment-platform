@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PlayerPositionLabels, PublicPlayerProfile } from '../../../core/models/models';
+import { PlayerPositionLabels, PublicPlayerProfile, handleImageFallback } from '../../../core/models/models';
 
 @Component({
   selector: 'app-profile-watchlist-tab',
@@ -23,7 +23,7 @@ import { PlayerPositionLabels, PublicPlayerProfile } from '../../../core/models/
               <div class="player-avatar mb-2">
                 <img
                   [src]="mediaUrlFn(player.avatarUrl)"
-                  (error)="$any($event.target).src='default-avatar.png'"
+                  (error)="onAvatarError($event)"
                   [alt]="player.fullName"
                   class="player-avatar-img" loading="lazy" decoding="async"
                 />
@@ -46,4 +46,5 @@ export class ProfileWatchlistTabComponent {
   @Output() remove = new EventEmitter<PublicPlayerProfile>();
 
   public readonly playerPositionLabels = PlayerPositionLabels;
+  public readonly onAvatarError = handleImageFallback;
 }

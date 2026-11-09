@@ -1,35 +1,51 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 import { PlayerService } from '../../../core/services/player.service';
 import { AcademyService } from '../../../core/services/academy.service';
 import { ClubService } from '../../../core/services/club.service';
 import { TrialOfferService } from '../../../core/services/trial-offer.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
-import { PlayerPosition, PlayerPositionLabels, PlayerProfile, PublicPlayerProfile, TrialOffer } from '../../../core/models/models';
-import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
+import { PlayerPosition, PlayerPositionLabels, PublicPlayerProfile, TrialOffer } from '../../../core/models/models';
 import { parseSupportedVideoUrl } from '../../../shared/components/video-modal/video-modal.component';
+import { ProfilePlayerFormComponent, PlayerFormModel } from './profile-player-form.component';
+import { ProfileAcademyFormComponent, AcademyFormModel } from './profile-academy-form.component';
+import { ProfileClubFormComponent, ClubFormModel } from './profile-club-form.component';
 import { ProfileOffersTabComponent } from './profile-offers-tab.component';
 import { ProfileWatchlistTabComponent } from './profile-watchlist-tab.component';
 
 @Component({
   selector: 'app-profile-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, RadarChartComponent, ProfileOffersTabComponent, ProfileWatchlistTabComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ProfilePlayerFormComponent,
+    ProfileAcademyFormComponent,
+    ProfileClubFormComponent,
+    ProfileOffersTabComponent,
+    ProfileWatchlistTabComponent
+  ],
   templateUrl: './profile-editor.component.html',
   styleUrls: ['./profile-editor.component.scss']
 })
 export class ProfileEditorComponent implements OnInit {
   private readonly title = inject(Title);
+  public readonly authService = inject(AuthService);
+  private readonly playerService = inject(PlayerService);
+  private readonly academyService = inject(AcademyService);
+  private readonly clubService = inject(ClubService);
+  private readonly trialOfferService = inject(TrialOfferService);
+  private readonly bookmarkService = inject(BookmarkService);
+
   public currentUser = computed(() => this.authService.currentUserSignal());
   public userRole = computed(() => this.currentUser()?.role);
 
   public activeTab: 'EDIT' | 'OFFERS' | 'WATCHLIST' = 'EDIT';
 
-  // Player Model
-  public playerForm = {
+  public playerForm: PlayerFormModel = {
     fullName: '',
     age: 18,
     birthDate: '',
@@ -39,18 +55,18 @@ export class ProfileEditorComponent implements OnInit {
     competitionLevel: '',
     playerGoal: '',
     availableForTransfer: false,
-    position: 'STRIKER' as PlayerPosition,
-    secondaryPositions: [] as PlayerPosition[],
+    position: 'STRIKER',
+    secondaryPositions: [],
     videoUrl: '',
-    videoUrls: [] as string[],
-    uploadedVideoUrls: [] as string[],
-    removedUploadedVideoUrls: [] as string[],
+    videoUrls: [],
+    uploadedVideoUrls: [],
+    removedUploadedVideoUrls: [],
     phone: '',
     bio: '',
     avatarUrl: '',
     heightCm: 175,
     weightKg: 70,
-    preferredFoot: 'RIGHT' as 'RIGHT' | 'LEFT' | 'BOTH',
+    preferredFoot: 'RIGHT',
     pace: 75,
     shooting: 70,
     passing: 70,
@@ -58,6 +74,54 @@ export class ProfileEditorComponent implements OnInit {
     defending: 65,
     physicality: 70
   };
+
+  public academyForm: AcademyFormModel = {
+    academyName: '',
+    websiteOrPageUrl: '',
+    cityCountry: '',
+    contactPhone: '',
+    logoUrl: '',
+    description: '',
+    ageGroups: '',
+    trainingType: ''
+  };
+
+  public clubForm: ClubFormModel = {
+    clubName: '',
+    logoUrl: '',
+    cityCountry: '',
+    contactPhone: '',
+    websiteOrPageUrl: '',
+    description: '',
+    leagueLevel: '',
+    activelyRecruiting: false
+  };
+
+  public newVideoUrl = '';
+  public isUploadingVideo = false;
+  public isUploadingImage = false;
+  public readonly mediaUrlBound = (value?: string | null): string => this.playerService.imageUrl(value);
+  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
+
+  public playerPositions = Object.keys(PlayerPositionLabels) as PlayerPosition[];
+  public playerPositionLabels = PlayerPositionLabels;
+
+  public myOffers: TrialOffer[] = [];
+  public sentOffers: TrialOffer[] = [];
+  public bookmarkedPlayers: PublicPlayerProfile[] = [];
+
+  public isLoading = false;
+  public isSaving = false;
+  public loadError = '';
+  public successMessage = '';
+  public errorMessage = '';
+
+  public readonly MAX_VIDEOS = 3;
+
+  ngOnInit(): void {
+    this.title.setTitle('لوحة التحكم والملف الشخصي | الكورة لعبتنا');
+    this.loadProfile();
+  }
 
   public toggleSecondaryPosition(pos: PlayerPosition): void {
     if (pos === this.playerForm.position) return;
@@ -72,12 +136,6 @@ export class ProfileEditorComponent implements OnInit {
   public isSecondaryPositionSelected(pos: PlayerPosition): boolean {
     return this.playerForm.secondaryPositions.includes(pos);
   }
-
-  public newVideoUrl = '';
-  public isUploadingVideo = false;
-  public isUploadingImage = false;
-  public readonly mediaUrlBound = (value?: string | null): string => this.playerService.imageUrl(value);
-  public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
   public uploadAvatarFile(event: Event): void {
     this.uploadProfileImage(event, url => { this.playerForm.avatarUrl = url; });
@@ -213,60 +271,6 @@ export class ProfileEditorComponent implements OnInit {
     });
   }
 
-  // Academy Model
-  public academyForm = {
-    academyName: '',
-    websiteOrPageUrl: '',
-    cityCountry: '',
-    contactPhone: '',
-    logoUrl: '',
-    description: '',
-    ageGroups: '' as string,
-    trainingType: ''
-  };
-
-  // Club Model
-  public clubForm = {
-    clubName: '',
-    logoUrl: '',
-    cityCountry: '',
-    contactPhone: '',
-    websiteOrPageUrl: '',
-    description: '',
-    leagueLevel: '',
-    activelyRecruiting: false
-  };
-
-  public playerPositions = Object.keys(PlayerPositionLabels) as PlayerPosition[];
-  public playerPositionLabels = PlayerPositionLabels;
-
-  // Trial Offers & Watchlist
-  public myOffers: TrialOffer[] = [];
-  public sentOffers: TrialOffer[] = [];
-  public bookmarkedPlayers: PublicPlayerProfile[] = [];
-
-  public isLoading = false;
-  public isSaving = false;
-  public loadError = '';
-  public successMessage = '';
-  public errorMessage = '';
-
-  constructor(
-    public authService: AuthService,
-    private playerService: PlayerService,
-    private academyService: AcademyService,
-    private clubService: ClubService,
-    private trialOfferService: TrialOfferService,
-    private bookmarkService: BookmarkService
-  ) {}
-
-  ngOnInit(): void {
-    this.title.setTitle('لوحة التحكم والملف الشخصي | الكورة لعبتنا');
-    this.loadProfile();
-  }
-
-  public readonly MAX_VIDEOS = 3;
-
   public setTab(tab: 'EDIT' | 'OFFERS' | 'WATCHLIST'): void {
     this.activeTab = tab;
     if (tab === 'OFFERS') {
@@ -337,7 +341,6 @@ export class ProfileEditorComponent implements OnInit {
     const trimmed = this.newVideoUrl?.trim() || '';
     if (!trimmed) return;
 
-    // ── منع تكرار نفس الرابط ──
     const normalized = (value: string) => {
       const parsed = parseSupportedVideoUrl(value.trim());
       if (parsed?.type === 'youtube') return `youtube:${parsed.youtubeId}`;
@@ -353,7 +356,6 @@ export class ProfileEditorComponent implements OnInit {
       return;
     }
 
-    // Use the same strict HTTPS/provider allowlist as the player.
     const parsed = parseSupportedVideoUrl(trimmed);
     if (!parsed || parsed.type === 'hosted') {
       this.errorMessage = 'يُدعم: YouTube — Google Drive — Vimeo — ملف MP4 مباشر';
@@ -505,57 +507,50 @@ export class ProfileEditorComponent implements OnInit {
     const role = this.userRole();
     if (!role) return;
 
-    this.isSaving = true;
     this.successMessage = '';
     this.errorMessage = '';
 
     if (role === 'PLAYER') {
-    if (role === 'PLAYER') {
       if (!this.playerForm.fullName.trim() || this.playerForm.fullName.trim().length < 3) {
-        this.isSaving = false;
         this.errorMessage = 'الاسم بالكامل يجب ألا يقل عن 3 أحرف.';
         return;
       }
       if (this.playerForm.age < 6 || this.playerForm.age > 60) {
-        this.isSaving = false;
         this.errorMessage = 'العمر يجب أن يكون بين 6 و 60 سنة.';
         return;
       }
       if (this.playerForm.heightCm && (this.playerForm.heightCm < 100 || this.playerForm.heightCm > 230)) {
-        this.isSaving = false;
         this.errorMessage = 'الطول يجب أن يكون بين 100 و 230 سم.';
         return;
       }
       if (this.playerForm.weightKg && (this.playerForm.weightKg < 30 || this.playerForm.weightKg > 200)) {
-        this.isSaving = false;
         this.errorMessage = 'الوزن يجب أن يكون بين 30 و 200 كجم.';
         return;
       }
     } else if (role === 'ACADEMY') {
       if (!this.academyForm.academyName.trim() || this.academyForm.academyName.trim().length < 2) {
-        this.isSaving = false;
         this.errorMessage = 'يرجى إدخال اسم الأكاديمية (حرفان على الأقل).';
         return;
       }
       if (!this.isValidHttpUrl(this.academyForm.websiteOrPageUrl)) {
-        this.isSaving = false;
         this.errorMessage = 'يرجى إدخال رابط موقع أو صفحة صحيح يبدأ بـ https://';
         return;
       }
     } else if (role === 'CLUB') {
       if (!this.clubForm.clubName.trim() || this.clubForm.clubName.trim().length < 2) {
-        this.isSaving = false;
         this.errorMessage = 'يرجى إدخال اسم النادي (حرفان على الأقل).';
         return;
       }
       if (!this.isValidHttpUrl(this.clubForm.websiteOrPageUrl)) {
-        this.isSaving = false;
         this.errorMessage = 'يرجى إدخال رابط موقع أو صفحة صحيح يبدأ بـ https://';
         return;
       }
     }
 
-      this.playerService.updateMyProfile(this.playerForm).subscribe({
+    this.isSaving = true;
+
+    if (role === 'PLAYER') {
+      this.playerService.updateMyProfile({ ...this.playerForm }).subscribe({
         next: (res) => {
           this.isSaving = false;
           if (res.success) {
@@ -575,7 +570,10 @@ export class ProfileEditorComponent implements OnInit {
         }
       });
     } else if (role === 'ACADEMY') {
-      this.academyService.updateMyProfile({ ...this.academyForm, ageGroups: this.academyForm.ageGroups.split(',').map(value => value.trim()).filter(Boolean) }).subscribe({
+      this.academyService.updateMyProfile({
+        ...this.academyForm,
+        ageGroups: this.academyForm.ageGroups.split(',').map(value => value.trim()).filter(Boolean)
+      }).subscribe({
         next: (res) => {
           this.isSaving = false;
           if (res.success) {

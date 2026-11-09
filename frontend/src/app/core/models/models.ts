@@ -1,6 +1,6 @@
 export type Role = 'PLAYER' | 'ACADEMY' | 'CLUB';
 
-export type PlayerPosition = 
+export type PlayerPosition =
   | 'GOALKEEPER'
   | 'CENTER_BACK'
   | 'LEFT_BACK'
@@ -24,6 +24,26 @@ export const PlayerPositionLabels: Record<PlayerPosition, { ar: string; en: stri
   RIGHT_WINGER: { ar: 'جناح أيمن', en: 'Right Winger' },
   STRIKER: { ar: 'مهاجم صريح', en: 'Striker' }
 };
+
+export const PreferredFootLabels: Record<string, string> = {
+  RIGHT: 'القدم اليمنى',
+  LEFT: 'القدم اليسرى',
+  BOTH: 'كلتا القدمين'
+};
+
+export const CompetitionLevelLabels: Record<string, string> = {
+  AMATEUR: 'هواة',
+  ACADEMY: 'أكاديميات وناشئين',
+  SEMI_PRO: 'شبه محترف',
+  PROFESSIONAL: 'محترف'
+};
+
+export function handleImageFallback(event: Event, fallbackSrc = 'default-avatar.png'): void {
+  const img = event.target as HTMLImageElement | null;
+  if (img && img.src !== fallbackSrc) {
+    img.src = fallbackSrc;
+  }
+}
 
 export interface User {
   userId: number;
@@ -81,7 +101,10 @@ export interface PlayerProfile {
   physicality?: number;
 }
 
-export type PublicPlayerProfile = Omit<PlayerProfile, 'userId' | 'email' | 'birthDate' | 'nationality' | 'phone' | 'uploadedVideoUrls' | 'availableForTransfer'>;
+export type PublicPlayerProfile = Omit<
+  PlayerProfile,
+  'userId' | 'email' | 'birthDate' | 'nationality' | 'phone' | 'uploadedVideoUrls' | 'availableForTransfer'
+>;
 
 export interface PlayerSearchPage {
   items: PublicPlayerProfile[];

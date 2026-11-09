@@ -16,6 +16,9 @@ import { parseSupportedVideoUrl } from '../../../shared/components/video-modal/v
 })
 export class RegisterComponent implements OnInit {
   private readonly title = inject(Title);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   public selectedRole: Role = 'PLAYER';
   public step = 1;
 
@@ -73,12 +76,6 @@ export class RegisterComponent implements OnInit {
   public errorMessage = '';
   public successMessage = '';
   public registrationCompleted = false;
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('إنشاء حساب جديد | الكورة لعبتنا');
@@ -243,7 +240,7 @@ export class RegisterComponent implements OnInit {
         guardianConsent: this.isMinor() ? this.guardianConsent : null
       };
       Object.assign(payload, profile);
-      (payload as any).playerProfile = profile;
+      payload['playerProfile'] = profile;
 
     } else if (this.selectedRole === 'ACADEMY') {
       Object.assign(payload, {

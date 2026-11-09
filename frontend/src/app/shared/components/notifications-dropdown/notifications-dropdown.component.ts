@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
 import { NotificationItem } from '../../../core/models/models';
@@ -146,9 +146,8 @@ import { NotificationItem } from '../../../core/models/models';
   `]
 })
 export class NotificationsDropdownComponent implements OnInit, OnDestroy {
+  public readonly notificationService = inject(NotificationService);
   public isOpen = signal(false);
-
-  constructor(public notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.notificationService.startPolling(60_000);

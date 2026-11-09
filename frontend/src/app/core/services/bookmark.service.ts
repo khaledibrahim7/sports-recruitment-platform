@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, tap, throwError } from 'rxjs';
 import { ApiResponse, PublicPlayerProfile } from '../models/models';
@@ -8,12 +8,11 @@ import { ApiResponse, PublicPlayerProfile } from '../models/models';
 })
 export class BookmarkService {
   private readonly API_URL = '/api/v1/bookmarks';
+  private readonly http = inject(HttpClient);
 
   public bookmarkedIdsSignal = signal<number[]>([]);
   public loadErrorSignal = signal('');
   public actionErrorSignal = signal('');
-
-  constructor(private http: HttpClient) {}
 
   public toggleBookmark(playerId: number): Observable<ApiResponse<{ bookmarked: boolean }>> {
     this.actionErrorSignal.set('');
@@ -28,8 +27,6 @@ export class BookmarkService {
           }
         }
       }),
-      // The component can read a visible message instead of silently losing the action.
-      // Keep the HTTP error propagated for callers that need to handle it.
       catchError(error => {
         this.actionErrorSignal.set('تعذر تحديث قائمة المتابعة. تحقق من الاتصال وحاول مرة أخرى.');
         return throwError(() => error);

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TrialOfferService } from '../../../core/services/trial-offer.service';
@@ -122,11 +122,10 @@ export class TrialOfferModalComponent {
   public location = '';
   public details = '';
 
+  private readonly trialOfferService = inject(TrialOfferService);
   public isSubmitting = false;
   public successMessage = '';
   public errorMessage = '';
-
-  constructor(private trialOfferService: TrialOfferService) {}
 
   @HostListener('document:keydown.escape')
   public handleEscape(): void {

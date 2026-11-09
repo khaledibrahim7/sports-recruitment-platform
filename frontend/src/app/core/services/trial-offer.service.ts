@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, TrialOffer } from '../models/models';
@@ -8,8 +8,7 @@ import { ApiResponse, TrialOffer } from '../models/models';
 })
 export class TrialOfferService {
   private readonly API_URL = '/api/v1/trial-offers';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   public sendOffer(playerId: number, trialDate: string, location: string, details: string): Observable<ApiResponse<TrialOffer>> {
     return this.http.post<ApiResponse<TrialOffer>>(this.API_URL, {

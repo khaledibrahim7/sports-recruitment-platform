@@ -14,20 +14,15 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class LoginComponent implements OnInit {
   private readonly title = inject(Title);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   public email = '';
   public password = '';
   public isLoading = false;
   public errorMessage = '';
   public requiresVerification = false;
-  private returnUrl = '/';
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-  }
+  private returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
   ngOnInit(): void {
     this.title.setTitle('تسجيل الدخول | الكورة لعبتنا');

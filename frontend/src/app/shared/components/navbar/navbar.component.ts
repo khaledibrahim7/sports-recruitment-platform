@@ -17,15 +17,12 @@ import { NotificationsDropdownComponent } from '../notifications-dropdown/notifi
 })
 export class NavbarComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
+  public readonly authService = inject(AuthService);
+  private readonly visitorService = inject(VisitorService);
+  private readonly router = inject(Router);
   public isLoggedIn = computed(() => this.authService.isLoggedIn());
   public currentUser = computed(() => this.authService.currentUserSignal());
   public visitorCount = computed(() => this.visitorService.visitorCountSignal());
-
-  constructor(
-    public authService: AuthService,
-    private visitorService: VisitorService,
-    private router: Router
-  ) {}
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;

@@ -186,7 +186,7 @@
             <div class="player-avatar">
               <img
                 [src]="mediaUrl(player.avatarUrl)"
-                (error)="$any($event.target).src='default-avatar.png'"
+                (error)="onAvatarError($event)"
                 [alt]="player.fullName"
                 class="player-avatar-img" loading="lazy" decoding="async"
               />

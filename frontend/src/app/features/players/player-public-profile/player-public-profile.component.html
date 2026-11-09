@@ -8,12 +8,24 @@
       <div class="profile-state" role="alert">
         <h1>ملف اللاعب</h1>
         <p>{{ loadError }}</p>
-        <a routerLink="/players" class="btn btn-primary">دليل اللاعبين</a>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <button type="button" class="btn btn-primary" (click)="loadPlayerProfile()">
+            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+          </button>
+          <a routerLink="/players" class="btn btn-outline">دليل اللاعبين</a>
+        </div>
       </div>
     } @else if (player) {
       <article class="glass-card profile-card">
         <header class="player-heading">
-          <img [src]="imageUrl(player.avatarUrl)" [alt]="'صورة ' + player.fullName" class="avatar" />
+          <img
+            [src]="imageUrl(player.avatarUrl)"
+            (error)="onAvatarError($event)"
+            [alt]="'صورة ' + player.fullName"
+            class="avatar"
+            loading="lazy"
+            decoding="async"
+          />
           <div class="heading-copy">
             <span class="badge badge-player">{{ positions[player.position].ar }}</span>
             <h1>{{ player.fullName }}</h1>
@@ -35,9 +47,9 @@
           <div><span>العمر</span><strong>{{ player.age }} سنة</strong></div>
           <div><span>الطول</span><strong>{{ player.heightCm ?? '—' }} سم</strong></div>
           <div><span>الوزن</span><strong>{{ player.weightKg ?? '—' }} كجم</strong></div>
-          <div><span>القدم المفضلة</span><strong>{{ player.preferredFoot || '—' }}</strong></div>
+          <div><span>القدم المفضلة</span><strong>{{ (player.preferredFoot && preferredFootLabels[player.preferredFoot]) || player.preferredFoot || '—' }}</strong></div>
           <div><span>الفريق الحالي</span><strong>{{ player.currentTeam || '—' }}</strong></div>
-          <div><span>مستوى المنافسة</span><strong>{{ player.competitionLevel || '—' }}</strong></div>
+          <div><span>مستوى المنافسة</span><strong>{{ (player.competitionLevel && competitionLevelLabels[player.competitionLevel]) || player.competitionLevel || '—' }}</strong></div>
         </section>
 
         <section class="skills-section">

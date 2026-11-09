@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build frontend --configuration production",
+    "lint": "node scripts/code-quality-check.mjs",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
     "test:ci": "ng test frontend --watch=false --browsers=ChromeHeadless",
     "test:e2e": "playwright test",

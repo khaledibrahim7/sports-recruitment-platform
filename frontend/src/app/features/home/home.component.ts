@@ -1,13 +1,18 @@
 import { Component, OnInit, computed, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { PlayerService } from '../../core/services/player.service';
 import { AcademyService } from '../../core/services/academy.service';
 import { ClubService } from '../../core/services/club.service';
-import { PlayerPositionLabels, PublicPlayerProfile, AcademyProfile, ClubProfile } from '../../core/models/models';
+import {
+  PlayerPositionLabels,
+  PublicPlayerProfile,
+  AcademyProfile,
+  ClubProfile,
+  handleImageFallback
+} from '../../core/models/models';
 import { VideoModalComponent } from '../../shared/components/video-modal/video-modal.component';
 
 @Component({
@@ -21,6 +26,12 @@ export class HomeComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  public readonly authService = inject(AuthService);
+  private readonly playerService = inject(PlayerService);
+  private readonly academyService = inject(AcademyService);
+  private readonly clubService = inject(ClubService);
+
+  public readonly onAvatarError = handleImageFallback;
   public isLoggedIn = computed(() => this.authService.isLoggedIn());
   public currentUser = computed(() => this.authService.currentUserSignal());
 
@@ -45,18 +56,10 @@ export class HomeComponent implements OnInit {
 
   public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
-  // Video Modal State
   public isVideoModalOpen = false;
   public selectedVideoUrl = '';
   public selectedVideoUrls: string[] = [];
   public selectedPlayerName = '';
-
-  constructor(
-    public authService: AuthService,
-    private playerService: PlayerService,
-    private academyService: AcademyService,
-    private clubService: ClubService
-  ) {}
 
   ngOnInit(): void {
     this.title.setTitle('الكورة لعبتنا | اكتشاف المواهب الرياضية');
@@ -67,7 +70,6 @@ export class HomeComponent implements OnInit {
   }
 
   public openVideo(player: PublicPlayerProfile): void {
-    // Pass full videoUrls array - fallback to single videoUrl if no array
     if (player.videoUrls && player.videoUrls.length > 0) {
       this.selectedVideoUrls = player.videoUrls;
       this.selectedVideoUrl = '';

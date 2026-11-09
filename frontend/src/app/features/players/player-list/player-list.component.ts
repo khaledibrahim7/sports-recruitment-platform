@@ -8,7 +8,7 @@ import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { PlayerPosition, PlayerPositionLabels, PublicPlayerProfile } from '../../../core/models/models';
+import { PlayerPosition, PlayerPositionLabels, PublicPlayerProfile, handleImageFallback } from '../../../core/models/models';
 import { VideoModalComponent } from '../../../shared/components/video-modal/video-modal.component';
 import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
 import { TrialOfferModalComponent } from '../../../shared/components/trial-offer-modal/trial-offer-modal.component';
@@ -25,6 +25,10 @@ export class PlayerListComponent implements OnInit, OnDestroy {
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly toastService = inject(ToastService);
+  private readonly playerService = inject(PlayerService);
+  public readonly bookmarkService = inject(BookmarkService);
+  public readonly authService = inject(AuthService);
+  public readonly onAvatarError = handleImageFallback;
   private readonly searchSubject = new Subject<string>();
   private searchSub: Subscription | null = null;
 
@@ -62,12 +66,6 @@ export class PlayerListComponent implements OnInit, OnDestroy {
   // Radar Chart Modal
   public isRadarModalOpen = false;
   public selectedRadarPlayer: PublicPlayerProfile | null = null;
-
-  constructor(
-    private playerService: PlayerService,
-    public bookmarkService: BookmarkService,
-    public authService: AuthService
-  ) {}
 
   public openTrialModal(player: PublicPlayerProfile, event: Event): void {
     event.stopPropagation();

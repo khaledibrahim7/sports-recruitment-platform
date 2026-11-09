@@ -51,6 +51,9 @@ jobs:
       - name: Security audit (production dependencies)
         run: npm audit --omit=dev --audit-level=high
 
+      - name: Code quality & architecture lint
+        run: npm run lint
+
       - name: Type check
         run: npm run typecheck
 

@@ -47,7 +47,7 @@
                 [src]="currentThumbnail"
                 [alt]="playerName"
                 class="vm-poster-img"
-                (error)="$any($event.target).src=''"
+                (error)="onPosterThumbError($event)"
               />
               <div class="vm-poster-gradient"></div>
             } @else {
@@ -148,7 +148,7 @@
                 <div class="vm-playlist-thumb">
                   @if (item.thumbnailUrl) {
                     <img [src]="item.thumbnailUrl" [alt]="item.label"
-                         (error)="$any($event.target).parentElement.classList.add('no-thumb')" />
+                         (error)="onPlaylistThumbError($event)" />
                   } @else {
                     <i class="fa-solid fa-film"></i>
                   }

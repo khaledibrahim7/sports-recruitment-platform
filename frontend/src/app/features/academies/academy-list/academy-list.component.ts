@@ -19,11 +19,11 @@ export class AcademyListComponent implements OnInit {
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly toastService = inject(ToastService);
+  private readonly academyService = inject(AcademyService);
+  private readonly playerService = inject(PlayerService);
   public academies: AcademyProfile[] = [];
   public isLoading = false;
   public loadError = '';
-
-  constructor(private academyService: AcademyService, private playerService: PlayerService) {}
 
   public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 

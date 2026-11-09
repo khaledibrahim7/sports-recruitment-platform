@@ -1,0 +1,280 @@
+<div class="form-group">
+  <label>الاسم بالكامل *</label>
+  <input type="text" [(ngModel)]="form.fullName" name="fullName" required class="form-control" />
+</div>
+
+<div class="grid-3">
+  <div class="form-group">
+    <label>السن (سنوات) *</label>
+    <input type="number" [(ngModel)]="form.age" name="age" required class="form-control" />
+  </div>
+  <div class="form-group">
+    <label>الطول (سم)</label>
+    <input type="number" [(ngModel)]="form.heightCm" name="heightCm" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label>الوزن (كجم)</label>
+    <input type="number" [(ngModel)]="form.weightKg" name="weightKg" class="form-control" />
+  </div>
+</div>
+
+<div class="grid-2 mt-3">
+  <div class="form-group">
+    <label>تاريخ الميلاد</label>
+    <input type="date" [(ngModel)]="form.birthDate" name="birthDate" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label>الجنسية</label>
+    <input type="text" [(ngModel)]="form.nationality" name="nationality" maxlength="80" class="form-control" />
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="form-group">
+    <label>مدينة ودولة الإقامة</label>
+    <input type="text" [(ngModel)]="form.cityCountry" name="cityCountry" maxlength="120" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label>النادي أو الأكاديمية الحالية / السابقة</label>
+    <input type="text" [(ngModel)]="form.currentTeam" name="currentTeam" maxlength="120" class="form-control" />
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="form-group">
+    <label>مستوى المنافسة</label>
+    <select [(ngModel)]="form.competitionLevel" name="competitionLevel" class="form-select">
+      <option value="">غير محدد</option>
+      <option value="AMATEUR">هواة</option>
+      <option value="ACADEMY">أكاديميات وناشئين</option>
+      <option value="SEMI_PRO">شبه محترف</option>
+      <option value="PROFESSIONAL">محترف</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="form-group">
+    <label>المركز الرئيسي في الملعب *</label>
+    <select [(ngModel)]="form.position" name="position" class="form-select">
+      @for (pos of playerPositions; track pos) {
+        <option [value]="pos">{{ playerPositionLabels[pos].ar }}</option>
+      }
+    </select>
+  </div>
+  <div class="form-group">
+    <label>القدم المفضلة</label>
+    <select [(ngModel)]="form.preferredFoot" name="preferredFoot" class="form-select">
+      <option value="RIGHT">القدم اليمنى</option>
+      <option value="LEFT">القدم اليسرى</option>
+      <option value="BOTH">كلتاهما</option>
+    </select>
+  </div>
+</div>
+
+<!-- Secondary Positions Selector -->
+<div class="form-group mt-3">
+  <label><i class="fa-solid fa-layer-group text-primary"></i> المراكز الثانوية / البديلة (يمكنك اختيار مركز أو أكثر)</label>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    @for (pos of playerPositions; track pos) {
+      @if (pos !== form.position) {
+        <button
+          type="button"
+          (click)="toggleSecondaryPosition(pos)"
+          class="btn-pos-pill"
+          [class.active]="isSecondaryPositionSelected(pos)"
+        >
+          <i [class]="isSecondaryPositionSelected(pos) ? 'fa-solid fa-check text-gold' : 'fa-solid fa-plus text-muted'"></i>
+          {{ playerPositionLabels[pos].ar }}
+        </button>
+      }
+    }
+  </div>
+  <small class="text-muted mt-1 d-block">
+    اختيارك للمراكز الثانوية يساعد الكشافين والأندية في العثور عليك عند البحث عن تلك المراكز أيضاً.
+  </small>
+</div>
+
+<!-- Avatar Field with Live Preview -->
+<div class="form-group mt-3">
+  <label><i class="fa-solid fa-image text-primary"></i> رابط صورة البروفايل الشخصية (اختياري)</label>
+  <div class="d-flex align-items-center gap-3">
+    <div class="avatar-preview-box">
+      <img
+        [src]="mediaUrlFn(form.avatarUrl)"
+        (error)="onAvatarError($event)"
+        alt="صورة الملف الشخصي"
+        class="avatar-preview-img"
+      />
+    </div>
+    <div class="flex-grow-1">
+      <input
+        type="text"
+        [(ngModel)]="form.avatarUrl"
+        name="avatarUrl"
+        placeholder="ضع رابط صورة شخصية (أو اتركها فارغة للاعتماد على الصورة الافتراضية)..."
+        class="form-control"
+      />
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" (change)="avatarUpload.emit($event)" class="form-control mt-2" aria-label="رفع صورة الملف الشخصي" />
+      @if (isUploadingImage) { <small class="text-primary d-block mt-1"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ رفع الصورة...</small> }
+      <small class="text-muted mt-1 d-block">
+        يمكنك استخدام رابط صورة أو رفع JPG أو PNG أو WebP أو AVIF حتى 10 ميجابايت. الصورة المرفوعة تُحفظ في مساحة المنصة.
+      </small>
+    </div>
+  </div>
+</div>
+
+<!-- Radar Skills Sliders & Interactive Visualization -->
+<div class="form-group mt-4 p-3 glass-card border border-emerald">
+  <h4 class="mb-3 text-emerald"><i class="fa-solid fa-chart-pie"></i> تقييمات المهارات والمؤشرات البدنية (Radar Skills)</h4>
+
+  <div class="row align-items-center">
+    <div class="col-md-7">
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>السرعة (Pace):</span>
+          <span class="text-emerald">{{ form.pace }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.pace" name="pace" class="form-range w-100" />
+      </div>
+
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>التسديد (Shooting):</span>
+          <span class="text-emerald">{{ form.shooting }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.shooting" name="shooting" class="form-range w-100" />
+      </div>
+
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>التمرير (Passing):</span>
+          <span class="text-emerald">{{ form.passing }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.passing" name="passing" class="form-range w-100" />
+      </div>
+
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>المراوغة (Dribbling):</span>
+          <span class="text-emerald">{{ form.dribbling }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.dribbling" name="dribbling" class="form-range w-100" />
+      </div>
+
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>الدفاع (Defending):</span>
+          <span class="text-emerald">{{ form.defending }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.defending" name="defending" class="form-range w-100" />
+      </div>
+
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between text-xs font-bold mb-1">
+          <span>القوة البدنية (Physicality):</span>
+          <span class="text-emerald">{{ form.physicality }}</span>
+        </div>
+        <input type="range" min="10" max="99" [(ngModel)]="form.physicality" name="physicality" class="form-range w-100" />
+      </div>
+    </div>
+
+    <div class="col-md-5 text-center mt-3 mt-md-0">
+      <app-radar-chart
+        [pace]="form.pace"
+        [shooting]="form.shooting"
+        [passing]="form.passing"
+        [dribbling]="form.dribbling"
+        [defending]="form.defending"
+        [physicality]="form.physicality"
+      ></app-radar-chart>
+    </div>
+  </div>
+</div>
+
+<!-- Multi Video Gallery Manager -->
+<div class="form-group mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <label class="mb-0">
+      <i class="fa-solid fa-film text-primary"></i> معرض فيديوهات الـ CV والمهارات
+    </label>
+    <span class="badge" [class.badge-player]="form.videoUrls.length < 3" [class.bg-gold]="form.videoUrls.length >= 3">
+      {{ form.videoUrls.length }} / 3 فيديوهات
+    </span>
+  </div>
+
+  @if (form.videoUrls.length < 3) {
+    <div class="d-flex gap-2 mb-3">
+      <input
+        type="url"
+        [ngModel]="newVideoUrl"
+        (ngModelChange)="newVideoUrlChange.emit($event)"
+        name="newVideoUrl"
+        placeholder="YouTube أو Vimeo أو Drive أو رابط فيديو مباشر (MP4)..."
+        class="form-control"
+      />
+      <button
+        type="button"
+        (click)="addVideo.emit()"
+        class="btn btn-primary btn-sm whitespace-nowrap"
+      >
+        <i class="fa-solid fa-plus"></i> إضافة فيديو
+      </button>
+    </div>
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <input type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/ogg" (change)="videoFileUpload.emit($event)" class="form-control" aria-label="رفع ملف فيديو" />
+      <span class="text-muted text-sm whitespace-nowrap">أو ارفع ملفاً (حد 100 MB)</span>
+    </div>
+    @if (isUploadingVideo) {
+      <div class="text-primary text-sm mb-3"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ رفع الفيديو إلى المنصة...</div>
+    }
+  } @else {
+    <div class="alert alert-info py-2 px-3 mb-3 text-sm d-flex align-items-center gap-2">
+      <i class="fa-solid fa-circle-check text-gold"></i>
+      <span>وصلت للحد الأقصى (3/3 فيديوهات). لحذف أو استبدال فيديو، استخدم خيار الحذف بالأسفل.</span>
+    </div>
+  }
+
+  @if (form.videoUrls && form.videoUrls.length > 0) {
+    <div class="video-playlist-list mt-3">
+      @for (vid of form.videoUrls; track $index) {
+        <div class="video-playlist-item glass-card p-3 mb-2 d-flex justify-content-between align-items-center gap-3">
+          <div class="d-flex align-items-center gap-2 overflow-hidden flex-grow-1">
+            <span class="badge badge-player flex-shrink-0">
+              <i class="fa-solid fa-play"></i> فيديو {{ $index + 1 }}
+            </span>
+            <span class="video-url-text text-truncate font-mono text-sm text-muted dir-ltr">
+              {{ form.uploadedVideoUrls.includes(vid) ? 'مرفوع على المنصة' : vid }}
+            </span>
+          </div>
+          <button
+            type="button"
+            (click)="removeVideo.emit($index)"
+            class="btn btn-outline-danger btn-xs flex-shrink-0"
+            title="حذف هذا الفيديو"
+          >
+            <i class="fa-solid fa-trash-can"></i> حذف
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<div class="form-group mt-3">
+  <label>رقم الهاتف للتواصل</label>
+  <input type="text" [(ngModel)]="form.phone" name="phone" class="form-control" />
+</div>
+
+<div class="form-group">
+  <label>نبذة رياضية ومسيرة سابقة</label>
+  <textarea [(ngModel)]="form.bio" name="bio" class="form-control"></textarea>
+</div>
+<div class="form-group">
+  <label>هدف اللاعب</label>
+  <textarea [(ngModel)]="form.playerGoal" name="playerGoal" class="form-control"></textarea>
+</div>
+<label class="form-check-label mb-3">
+  <input type="checkbox" [(ngModel)]="form.availableForTransfer" name="availableForTransfer" />
+  متاح للانتقال أو استقبال عروض
+</label>

@@ -152,6 +152,15 @@ public class CommonSecurityConfig {
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).denyAll()
+                // Private profile endpoints must always require authentication before wildcard GET rules
+                .requestMatchers(
+                    "/api/v1/players/me",
+                    "/api/v1/players/me/**",
+                    "/api/v1/academies/me",
+                    "/api/v1/academies/me/**",
+                    "/api/v1/clubs/me",
+                    "/api/v1/clubs/me/**"
+                ).authenticated()
                 // Public read access to catalog (player/academy/club listings)
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/players/videos/**",

@@ -1,38 +1,38 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-radar-chart',
   standalone: true,
-  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="radar-chart-container text-center">
-      <svg viewBox="0 0 300 300" class="radar-svg">
+      <svg viewBox="0 0 300 300" class="radar-svg" role="img" aria-label="مخطط راداري للمؤشرات الفنية والبدنية">
         <!-- Background Concentric Hexagons (20%, 40%, 60%, 80%, 100%) -->
-        <polygon *ngFor="let level of [0.2, 0.4, 0.6, 0.8, 1.0]"
-                 [attr.points]="getHexagonPoints(level)"
-                 class="grid-polygon" />
+        @for (points of hexagonPolygons; track $index) {
+          <polygon [attr.points]="points" class="grid-polygon" />
+        }
 
         <!-- Axes lines from center to outer points -->
-        <line *ngFor="let pt of outerPoints"
-              x1="150" y1="150"
-              [attr.x2]="pt.x" [attr.y2]="pt.y"
-              class="grid-axis" />
+        @for (pt of outerPoints; track $index) {
+          <line x1="150" y1="150" [attr.x2]="pt.x" [attr.y2]="pt.y" class="grid-axis" />
+        }
 
         <!-- Data Polygon -->
         <polygon [attr.points]="dataPoints" class="data-polygon" />
-        
+
         <!-- Data Circles on vertices -->
-        <circle *ngFor="let pt of vertexPoints"
-                [attr.cx]="pt.x" [attr.cy]="pt.y"
-                r="4" class="data-point-circle" />
+        @for (pt of vertexPoints; track $index) {
+          <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="4" class="data-point-circle" />
+        }
 
         <!-- Labels -->
-        <g *ngFor="let label of labelsInfo">
-          <text [attr.x]="label.x" [attr.y]="label.y" class="radar-label" text-anchor="middle">
-            {{ label.text }} ({{ label.value }})
-          </text>
-        </g>
+        @for (label of labelsInfo; track label.text) {
+          <g>
+            <text [attr.x]="label.x" [attr.y]="label.y" class="radar-label" text-anchor="middle">
+              {{ label.text }} ({{ label.value }})
+            </text>
+          </g>
+        }
       </svg>
     </div>
   `,
@@ -77,17 +77,18 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class RadarChartComponent implements OnChanges {
-  @Input() pace: number = 75;
-  @Input() shooting: number = 70;
-  @Input() passing: number = 70;
-  @Input() dribbling: number = 75;
-  @Input() defending: number = 65;
-  @Input() physicality: number = 70;
+  @Input() pace = 75;
+  @Input() shooting = 70;
+  @Input() passing = 70;
+  @Input() dribbling = 75;
+  @Input() defending = 65;
+  @Input() physicality = 70;
 
-  public dataPoints: string = '';
+  public dataPoints = '';
   public outerPoints: { x: number; y: number }[] = [];
   public vertexPoints: { x: number; y: number }[] = [];
   public labelsInfo: { x: number; y: number; text: string; value: number }[] = [];
+  public readonly hexagonPolygons: string[];
 
   private readonly CENTER_X = 150;
   private readonly CENTER_Y = 150;
@@ -102,7 +103,12 @@ export class RadarChartComponent implements OnChanges {
     { key: 'physicality', text: 'القوة' }
   ];
 
-  ngOnChanges(changes: SimpleChanges): void {
+  constructor() {
+    this.hexagonPolygons = [0.2, 0.4, 0.6, 0.8, 1.0].map(scale => this.getHexagonPoints(scale));
+    this.calculateRadar();
+  }
+
+  ngOnChanges(_changes: SimpleChanges): void {
     this.calculateRadar();
   }
 
@@ -122,7 +128,7 @@ export class RadarChartComponent implements OnChanges {
     const pointsArr: string[] = [];
 
     for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i - Math.PI / 2; // start from top
+      const angle = (Math.PI / 3) * i - Math.PI / 2;
       const outerX = this.CENTER_X + this.RADIUS * Math.cos(angle);
       const outerY = this.CENTER_Y + this.RADIUS * Math.sin(angle);
       this.outerPoints.push({ x: outerX, y: outerY });
@@ -133,7 +139,6 @@ export class RadarChartComponent implements OnChanges {
       this.vertexPoints.push({ x: dataX, y: dataY });
       pointsArr.push(`${dataX},${dataY}`);
 
-      // Labels position slightly outside outer radius
       const labelRadius = this.RADIUS + 22;
       const labelX = this.CENTER_X + labelRadius * Math.cos(angle);
       const labelY = this.CENTER_Y + labelRadius * Math.sin(angle) + 4;

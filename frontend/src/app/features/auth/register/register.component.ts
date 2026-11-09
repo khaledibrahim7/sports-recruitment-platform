@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { PlayerPosition, PlayerPositionLabels, Role } from '../../../core/models/models';
+import { parseSupportedVideoUrl } from '../../../shared/components/video-modal/video-modal.component';
 
 @Component({
   selector: 'app-register',
@@ -13,6 +15,7 @@ import { PlayerPosition, PlayerPositionLabels, Role } from '../../../core/models
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
+  private readonly title = inject(Title);
   public selectedRole: Role = 'PLAYER';
   public step = 1;
 
@@ -78,6 +81,7 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.title.setTitle('إنشاء حساب جديد | الكورة لعبتنا');
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/profile']);
       return;
@@ -132,6 +136,13 @@ export class RegisterComponent implements OnInit {
       this.errorMessage = 'يرجى اختيار هدفك من التسجيل للمتابعة.';
       return;
     }
+    if (this.selectedRole === 'PLAYER' && this.videoUrl.trim()) {
+      const parsedVideo = parseSupportedVideoUrl(this.videoUrl.trim());
+      if (!parsedVideo || parsedVideo.type === 'hosted') {
+        this.errorMessage = 'رابط الفيديو غير صالح. يُدعم: YouTube — Google Drive — Vimeo — ملف MP4 مباشر (HTTPS).';
+        return;
+      }
+    }
     this.step = 2;
   }
 
@@ -145,6 +156,10 @@ export class RegisterComponent implements OnInit {
 
     if (!this.fullName.trim() || !this.email.trim() || !this.password) {
       this.errorMessage = 'يرجى استكمال الاسم والبريد الإلكتروني وكلمة المرور.';
+      return;
+    }
+    if (this.fullName.trim().length > 0 && (this.fullName.trim().length < 3 || this.fullName.trim().length > 100)) {
+      this.errorMessage = 'الاسم بالكامل يجب أن يكون بين 3 و 100 حرف.';
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {

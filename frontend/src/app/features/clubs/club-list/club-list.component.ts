@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ClubService } from '../../../core/services/club.service';
 import { PlayerService } from '../../../core/services/player.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ClubProfile } from '../../../core/models/models';
 
 @Component({
@@ -17,8 +18,10 @@ export class ClubListComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly toastService = inject(ToastService);
   public clubs: ClubProfile[] = [];
   public isLoading = false;
+  public loadError = '';
 
   constructor(private clubService: ClubService, private playerService: PlayerService) {}
 
@@ -33,15 +36,25 @@ export class ClubListComponent implements OnInit {
 
   public loadClubs(): void {
     this.isLoading = true;
+    this.loadError = '';
     this.clubService.getClubs().subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.success && res.data) {
           this.clubs = res.data;
+        } else {
+          this.clubs = [];
+          this.loadError = 'تعذر تحميل قائمة الأندية. حاول مرة أخرى.';
+          this.toastService.error(this.loadError);
         }
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
+        this.clubs = [];
+        this.loadError = err?.status === 0
+          ? 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم أعد المحاولة.'
+          : 'حدث خطأ أثناء تحميل قائمة الأندية. حاول مرة أخرى.';
+        this.toastService.error(this.loadError);
       }
     });
   }

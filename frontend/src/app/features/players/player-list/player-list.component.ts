@@ -1,11 +1,13 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
 import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookmarkService } from '../../../core/services/bookmark.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { PlayerPosition, PlayerPositionLabels, PublicPlayerProfile } from '../../../core/models/models';
 import { VideoModalComponent } from '../../../shared/components/video-modal/video-modal.component';
 import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
@@ -18,10 +20,14 @@ import { TrialOfferModalComponent } from '../../../shared/components/trial-offer
   templateUrl: './player-list.component.html',
   styleUrls: ['./player-list.component.scss']
 })
-export class PlayerListComponent implements OnInit {
+export class PlayerListComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly toastService = inject(ToastService);
+  private readonly searchSubject = new Subject<string>();
+  private searchSub: Subscription | null = null;
+
   public players: PublicPlayerProfile[] = [];
   public selectedPosition: PlayerPosition | '' = '';
   public searchQuery = '';
@@ -87,14 +93,39 @@ export class PlayerListComponent implements OnInit {
     this.selectedRadarPlayer = null;
   }
 
+  @HostListener('document:keydown.escape')
+  public handleEscape(): void {
+    if (this.isRadarModalOpen) {
+      this.closeRadarModal();
+    }
+  }
+
   ngOnInit(): void {
     this.title.setTitle('دليل اللاعبين | الكورة لعبتنا');
     this.meta.updateTag({ name: 'description', content: 'ابحث في ملفات اللاعبين المسجلين حسب المركز والعمر والمهارات.' });
     if (!isPlatformBrowser(this.platformId)) return;
+
+    this.searchSub = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage = 0;
+      this.loadPlayers();
+    });
+
     this.loadPlayers();
     if (this.canBookmark()) {
       this.bookmarkService.loadBookmarkedIds();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  public onSearchQueryChange(value: string): void {
+    this.searchQuery = value;
+    this.searchSubject.next(value.trim());
   }
 
   public canBookmark(): boolean {
@@ -131,6 +162,7 @@ export class PlayerListComponent implements OnInit {
         } else {
           this.players = [];
           this.loadError = 'تعذر تحميل دليل اللاعبين. حاول مرة أخرى.';
+          this.toastService.error(this.loadError);
         }
       },
       error: (err) => {
@@ -139,6 +171,7 @@ export class PlayerListComponent implements OnInit {
         this.loadError = err.status === 0
           ? 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم أعد المحاولة.'
           : 'حدث خطأ أثناء تحميل دليل اللاعبين. حاول مرة أخرى.';
+        this.toastService.error(this.loadError);
       }
     });
   }

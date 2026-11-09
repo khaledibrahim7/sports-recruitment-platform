@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiResponse } from '../models/models';
 
 export interface AiChatRequest {
   message: string;
@@ -10,12 +11,6 @@ export interface AiChatRequest {
 export interface AiChatResponse {
   reply: string;
   success: boolean;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { NotificationsDropdownComponent } from '../notifications-dropdown/notifi
 @Component({
   selector: 'app-navbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, RouterLinkActive, NotificationsDropdownComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']

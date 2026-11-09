@@ -32,6 +32,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (request.getRole() == null || request.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("Choose a supported account type");
+        }
         if (!request.isTermsAccepted()) {
             throw new IllegalArgumentException("Terms and privacy consent is required");
         }

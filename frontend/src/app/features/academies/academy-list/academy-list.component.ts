@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AcademyService } from '../../../core/services/academy.service';
 import { PlayerService } from '../../../core/services/player.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { AcademyProfile } from '../../../core/models/models';
 
 @Component({
@@ -17,8 +18,10 @@ export class AcademyListComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly toastService = inject(ToastService);
   public academies: AcademyProfile[] = [];
   public isLoading = false;
+  public loadError = '';
 
   constructor(private academyService: AcademyService, private playerService: PlayerService) {}
 
@@ -33,15 +36,25 @@ export class AcademyListComponent implements OnInit {
 
   public loadAcademies(): void {
     this.isLoading = true;
+    this.loadError = '';
     this.academyService.getAcademies().subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.success && res.data) {
           this.academies = res.data;
+        } else {
+          this.academies = [];
+          this.loadError = 'تعذر تحميل قائمة الأكاديميات. حاول مرة أخرى.';
+          this.toastService.error(this.loadError);
         }
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
+        this.academies = [];
+        this.loadError = err?.status === 0
+          ? 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم أعد المحاولة.'
+          : 'حدث خطأ أثناء تحميل قائمة الأكاديميات. حاول مرة أخرى.';
+        this.toastService.error(this.loadError);
       }
     });
   }

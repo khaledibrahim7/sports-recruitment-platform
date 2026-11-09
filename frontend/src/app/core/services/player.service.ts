@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { ApiResponse, PlayerPosition, PlayerProfile, PlayerSearchPage, PublicPlayerProfile } from '../models/models';
-import { Inject } from '@angular/core';
 import { APP_CONFIG, AppConfig } from '../config/app-config';
 
 @Injectable({
@@ -10,6 +9,8 @@ import { APP_CONFIG, AppConfig } from '../config/app-config';
 })
 export class PlayerService {
   private readonly API_URL = '/api/v1/players';
+  private readonly cache = new Map<string, { expiresAt: number; observable$: Observable<ApiResponse<PlayerSearchPage>> }>();
+  private readonly CACHE_TTL_MS = 60_000;
 
   constructor(private http: HttpClient, @Inject(APP_CONFIG) private config: AppConfig) {}
 
@@ -18,23 +19,47 @@ export class PlayerService {
     age?: number | null,
     query = '',
     page = 0,
-    size = 12
+    size = 12,
+    forceRefresh = false
   ): Observable<ApiResponse<PlayerSearchPage>> {
-    let params = new HttpParams().set('page', page).set('size', size);
+    const trimmedQuery = query.trim();
+    const isCacheable = !position && (age === undefined || age === null) && !trimmedQuery && page === 0;
+    const cacheKey = `default:${size}`;
 
+    if (isCacheable && !forceRefresh) {
+      const cached = this.cache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.observable$;
+      }
+    }
+
+    let params = new HttpParams().set('page', page).set('size', size);
     if (position) params = params.set('position', position);
     if (age !== undefined && age !== null) params = params.set('age', age.toString());
-    if (query.trim()) params = params.set('query', query.trim());
+    if (trimmedQuery) params = params.set('query', trimmedQuery);
 
-    return this.http.get<ApiResponse<PlayerSearchPage>>(this.API_URL, { params });
+    const request$ = this.http.get<ApiResponse<PlayerSearchPage>>(this.API_URL, { params }).pipe(
+      tap({
+        error: () => {
+          if (isCacheable) this.cache.delete(cacheKey);
+        }
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    if (isCacheable) {
+      this.cache.set(cacheKey, { expiresAt: Date.now() + this.CACHE_TTL_MS, observable$: request$ });
+    }
+
+    return request$;
+  }
+
+  public invalidateCache(): void {
+    this.cache.clear();
   }
 
   public searchPlayers(position: PlayerPosition | '', age: number | null, query: string, page: number, size = 12): Observable<ApiResponse<PlayerSearchPage>> {
-    let params = new HttpParams().set('page', page).set('size', size);
-    if (position) params = params.set('position', position);
-    if (age !== null) params = params.set('age', age);
-    if (query.trim()) params = params.set('query', query.trim());
-    return this.http.get<ApiResponse<PlayerSearchPage>>(this.API_URL, { params });
+    return this.getPlayers(position, age, query, page, size);
   }
 
   public getPlayerById(id: number): Observable<ApiResponse<PublicPlayerProfile>> {
@@ -45,8 +70,10 @@ export class PlayerService {
     return this.http.get<ApiResponse<PlayerProfile>>(`${this.API_URL}/me`);
   }
 
-  public updateMyProfile(payload: any): Observable<ApiResponse<PlayerProfile>> {
-    return this.http.put<ApiResponse<PlayerProfile>>(`${this.API_URL}/me`, payload);
+  public updateMyProfile(payload: Record<string, unknown>): Observable<ApiResponse<PlayerProfile>> {
+    return this.http.put<ApiResponse<PlayerProfile>>(`${this.API_URL}/me`, payload).pipe(
+      tap(() => this.invalidateCache())
+    );
   }
 
   public createVideoUploadUrl(file: File): Observable<ApiResponse<{ key: string; uploadUrl: string; contentType: string; maxBytes: number }>> {

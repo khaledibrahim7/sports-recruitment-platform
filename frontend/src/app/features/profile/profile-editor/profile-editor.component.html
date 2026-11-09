@@ -1,4 +1,4 @@
-<div class="page-container section-padding">
+﻿<div class="page-container section-padding">
   <div class="container max-w-900">
     <div class="glass-card profile-card">
       <div class="profile-header d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -54,6 +54,24 @@
       @if (errorMessage) {
         <div class="alert alert-danger mt-3">
           <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+          @if (activeTab === 'OFFERS') {
+            <button type="button" (click)="loadOffers()" class="btn btn-outline btn-xs ms-2">
+              <i class="fa-solid fa-rotate-right"></i> حاول تاني
+            </button>
+          } @else if (activeTab === 'WATCHLIST') {
+            <button type="button" (click)="loadWatchlist()" class="btn btn-outline btn-xs ms-2">
+              <i class="fa-solid fa-rotate-right"></i> حاول تاني
+            </button>
+          }
+        </div>
+      }
+
+      @if (loadError) {
+        <div class="alert alert-danger mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+          <span><i class="fa-solid fa-triangle-exclamation"></i> {{ loadError }}</span>
+          <button type="button" (click)="loadProfile()" class="btn btn-outline btn-xs">
+            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+          </button>
         </div>
       }
 
@@ -441,112 +459,24 @@
           </form>
         }
 
+
         <!-- TAB 2: TRIAL OFFERS -->
         @if (activeTab === 'OFFERS') {
-          <div class="mt-4">
-            <h3 class="mb-3 text-gold">
-              <i class="fa-solid fa-paper-plane"></i>
-              {{ userRole() === 'PLAYER' ? 'طلبات المعايشة والاختبار الموجهة إليك' : 'طلبات المعايشة المنشورة للاعبين' }}
-            </h3>
-
-            @if (userRole() === 'PLAYER') {
-              @if (myOffers.length === 0) {
-                <div class="text-center py-5 text-muted glass-card">
-                  <i class="fa-solid fa-envelope-open-text fa-3x mb-2 opacity-50"></i>
-                  <p>لم تتلقَ أي طلبات معايشة حتى الآن. تأكد من تحديث بروفايلك وفيديوهاتك لزيادة فرصة اكتشافك!</p>
-                </div>
-              } @else {
-                <div class="offers-grid">
-                  @for (offer of myOffers; track offer.id) {
-                    <div class="glass-card p-3 mb-3 border-emerald">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge" [class.badge-academy]="offer.scoutRole === 'ACADEMY'" [class.badge-club]="offer.scoutRole === 'CLUB'">
-                          <i class="fa-solid fa-building"></i> {{ offer.scoutName }} ({{ offer.scoutRole === 'ACADEMY' ? 'أكاديمية' : 'نادي' }})
-                        </span>
-                        <span class="badge" [class.bg-warning]="offer.status === 'PENDING'" [class.bg-success]="offer.status === 'ACCEPTED'" [class.bg-danger]="offer.status === 'REJECTED'">
-                          {{ offer.status === 'PENDING' ? 'قيد الانتظار' : (offer.status === 'ACCEPTED' ? 'تم القبول ✅' : 'تم الرفض ❌') }}
-                        </span>
-                      </div>
-
-                      <p class="mb-1 text-sm"><strong>التاريخ المحدد:</strong> {{ offer.trialDate }}</p>
-                      <p class="mb-1 text-sm"><strong>العنوان والمكان:</strong> {{ offer.location }}</p>
-                      @if (offer.details) {
-                        <p class="text-muted text-xs mt-2 p-2 bg-dark rounded">{{ offer.details }}</p>
-                      }
-
-                      @if (offer.status === 'PENDING') {
-                        <div class="d-flex gap-2 mt-3">
-                          <button (click)="updateOfferStatus(offer.id, 'ACCEPTED')" class="btn btn-primary btn-sm flex-grow-1">
-                            <i class="fa-solid fa-check"></i> قبول الطلب
-                          </button>
-                          <button (click)="updateOfferStatus(offer.id, 'REJECTED')" class="btn btn-outline-danger btn-sm">
-                            <i class="fa-solid fa-xmark"></i> رفض
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            } @else {
-              <!-- Scout Sent Offers -->
-              @if (sentOffers.length === 0) {
-                <div class="text-center py-5 text-muted glass-card">
-                  <i class="fa-solid fa-paper-plane fa-3x mb-2 opacity-50"></i>
-                  <p>لم تقم بإرسال أي طلبات معايشة للاعبين بعد. استعرض سوق اللاعبين وأرسل دعوات معايشة للمواهب!</p>
-                </div>
-              } @else {
-                <div class="offers-grid">
-                  @for (offer of sentOffers; track offer.id) {
-                    <div class="glass-card p-3 mb-3">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong class="text-emerald"><i class="fa-solid fa-user-ninja"></i> اللاعب: {{ offer.playerName }}</strong>
-                        <span class="badge" [class.bg-warning]="offer.status === 'PENDING'" [class.bg-success]="offer.status === 'ACCEPTED'" [class.bg-danger]="offer.status === 'REJECTED'">
-                          {{ offer.status === 'PENDING' ? 'قيد الانتظار' : (offer.status === 'ACCEPTED' ? 'تم القبول ✅' : 'تم الرفض ❌') }}
-                        </span>
-                      </div>
-                      <p class="mb-1 text-sm"><strong>تاريخ المعايشة:</strong> {{ offer.trialDate }}</p>
-                      <p class="mb-1 text-sm"><strong>المكان:</strong> {{ offer.location }}</p>
-                    </div>
-                  }
-                </div>
-              }
-            }
-          </div>
+          <app-profile-offers-tab
+            [userRole]="userRole()"
+            [myOffers]="myOffers"
+            [sentOffers]="sentOffers"
+            (statusChange)="updateOfferStatus($event.offerId, $event.status)"
+          ></app-profile-offers-tab>
         }
 
         <!-- TAB 3: WATCHLIST -->
         @if (activeTab === 'WATCHLIST') {
-          <div class="mt-4">
-            <h3 class="mb-3 text-gold"><i class="fa-solid fa-bookmark"></i> قائمة اللاعبين المحفوظين للمتابعة</h3>
-
-            @if (bookmarkedPlayers.length === 0) {
-              <div class="text-center py-5 text-muted glass-card">
-                <i class="fa-solid fa-bookmark fa-3x mb-2 opacity-50"></i>
-                <p>قائمة المتابعة فارغة حالياً. اضغط على أيقونة الإشارة المرجعية <i class="fa-solid fa-bookmark text-gold"></i> بكروت سوق اللاعبين لحفظهم هنا.</p>
-              </div>
-            } @else {
-              <div class="players-grid">
-                @for (player of bookmarkedPlayers; track player.id) {
-                  <div class="glass-card player-card p-3 d-flex flex-column align-items-center text-center">
-                    <div class="player-avatar mb-2">
-                      <img
-                        [src]="mediaUrl(player.avatarUrl)"
-                        (error)="$any($event.target).src='default-avatar.png'"
-                        [alt]="player.fullName"
-                        class="player-avatar-img"
-                      />
-                    </div>
-                    <h4 class="m-0 text-white">{{ player.fullName }}</h4>
-                    <span class="badge badge-player mt-1 mb-2">{{ playerPositionLabels[player.position].ar || player.position }}</span>
-                    <button (click)="removeBookmark(player)" class="btn btn-outline-danger btn-xs w-100 mt-2">
-                      <i class="fa-solid fa-trash-can"></i> إزالة من القائمة
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+          <app-profile-watchlist-tab
+            [bookmarkedPlayers]="bookmarkedPlayers"
+            [mediaUrlFn]="mediaUrlBound"
+            (remove)="removeBookmark($event)"
+          ></app-profile-watchlist-tab>
         }
       }
     </div>

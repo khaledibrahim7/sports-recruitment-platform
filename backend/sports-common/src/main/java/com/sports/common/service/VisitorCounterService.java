@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class VisitorCounterService {
 
-    private final AtomicLong visitorCount = new AtomicLong(1250);
+    private final AtomicLong visitorCount = new AtomicLong(0);
 
     public long incrementAndGet() {
         return visitorCount.incrementAndGet();

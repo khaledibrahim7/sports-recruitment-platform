@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
 import { NotificationItem } from '../../../core/models/models';
@@ -6,6 +6,7 @@ import { NotificationItem } from '../../../core/models/models';
 @Component({
   selector: 'app-notifications-dropdown',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="notifications-wrapper position-relative">
@@ -18,7 +19,7 @@ import { NotificationItem } from '../../../core/models/models';
       </button>
 
       @if (isOpen()) {
-        <div class="notif-dropdown glass-card p-3" (click)="$event.stopPropagation()">
+        <div class="notif-dropdown glass-card p-3" role="region" aria-label="قائمة الإشعارات" (click)="$event.stopPropagation()">
           <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
             <h4 class="m-0 text-sm font-bold">
               <i class="fa-solid fa-bell text-gold"></i> الإشعارات والفرص
@@ -144,13 +145,24 @@ import { NotificationItem } from '../../../core/models/models';
     }
   `]
 })
-export class NotificationsDropdownComponent implements OnInit {
+export class NotificationsDropdownComponent implements OnInit, OnDestroy {
   public isOpen = signal(false);
 
   constructor(public notificationService: NotificationService) {}
 
   ngOnInit(): void {
-    this.notificationService.loadNotifications();
+    this.notificationService.startPolling(60_000);
+  }
+
+  ngOnDestroy(): void {
+    this.notificationService.stopPolling();
+  }
+
+  @HostListener('document:keydown.escape')
+  public handleEscape(): void {
+    if (this.isOpen()) {
+      this.isOpen.set(false);
+    }
   }
 
   public get unreadCount() {

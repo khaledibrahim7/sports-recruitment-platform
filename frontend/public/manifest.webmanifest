@@ -1,0 +1,20 @@
+{
+  "name": "الكورة لعبتنا — منظومة استكشاف المواهب الرياضية",
+  "short_name": "الكورة لعبتنا",
+  "description": "منصة متكاملة لاكتشاف وتوظيف المواهب الرياضية بين اللاعبين والأكاديميات والأندية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0E0E10",
+  "theme_color": "#0E0E10",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

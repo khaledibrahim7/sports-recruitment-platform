@@ -220,7 +220,7 @@
                   [src]="mediaUrl(player.avatarUrl)"
                   (error)="$any($event.target).src='default-avatar.png'"
                   [alt]="player.fullName"
-                  class="player-avatar-img"
+                  class="player-avatar-img" loading="lazy" decoding="async"
                 />
               </div>
               <h3 class="player-name">{{ player.fullName }}</h3>

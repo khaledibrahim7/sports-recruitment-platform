@@ -22,11 +22,12 @@ export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');
  */
 export function appConfigFactory(): AppConfig {
   const win = typeof window === 'undefined' ? undefined : window as Window & { __APP_CONFIG__?: AppConfig };
-  const runtime = win?.__APP_CONFIG__ ?? (typeof process === 'undefined' ? undefined : {
-    apiBaseUrl: process.env['API_BASE_URL'],
-    sentryDsn: process.env['SENTRY_DSN'],
-    environment: process.env['NODE_ENV'],
-  });
+  const nodeEnv = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const runtime = win?.__APP_CONFIG__ ?? (nodeEnv ? {
+    apiBaseUrl: nodeEnv['API_BASE_URL'],
+    sentryDsn: nodeEnv['SENTRY_DSN'],
+    environment: nodeEnv['NODE_ENV'],
+  } : undefined);
   let apiBaseUrl = '';
   try {
     const candidate = runtime?.apiBaseUrl?.trim();

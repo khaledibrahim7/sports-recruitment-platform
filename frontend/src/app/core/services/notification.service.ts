@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, Subscription, interval, tap } from 'rxjs';
 import { ApiResponse, NotificationItem } from '../models/models';
 
 @Injectable({
@@ -8,12 +9,30 @@ import { ApiResponse, NotificationItem } from '../models/models';
 })
 export class NotificationService {
   private readonly API_URL = '/api/v1/notifications';
+  private readonly platformId = inject(PLATFORM_ID);
+  private pollingSub: Subscription | null = null;
 
   public unreadCountSignal = signal<number>(0);
   public notificationsSignal = signal<NotificationItem[]>([]);
   public loadErrorSignal = signal('');
 
   constructor(private http: HttpClient) {}
+
+  public startPolling(intervalMs = 60_000): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.stopPolling();
+    this.loadNotifications();
+    this.pollingSub = interval(intervalMs).subscribe(() => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        this.loadNotifications();
+      }
+    });
+  }
+
+  public stopPolling(): void {
+    this.pollingSub?.unsubscribe();
+    this.pollingSub = null;
+  }
 
   public loadNotifications(): void {
     this.loadErrorSignal.set('');

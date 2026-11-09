@@ -1,4 +1,5 @@
-import { Component, OnInit, computed } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,15 +11,18 @@ import { BookmarkService } from '../../../core/services/bookmark.service';
 import { PlayerPosition, PlayerPositionLabels, PlayerProfile, PublicPlayerProfile, TrialOffer } from '../../../core/models/models';
 import { RadarChartComponent } from '../../../shared/components/radar-chart/radar-chart.component';
 import { parseSupportedVideoUrl } from '../../../shared/components/video-modal/video-modal.component';
+import { ProfileOffersTabComponent } from './profile-offers-tab.component';
+import { ProfileWatchlistTabComponent } from './profile-watchlist-tab.component';
 
 @Component({
   selector: 'app-profile-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, RadarChartComponent],
+  imports: [CommonModule, FormsModule, RadarChartComponent, ProfileOffersTabComponent, ProfileWatchlistTabComponent],
   templateUrl: './profile-editor.component.html',
   styleUrls: ['./profile-editor.component.scss']
 })
 export class ProfileEditorComponent implements OnInit {
+  private readonly title = inject(Title);
   public currentUser = computed(() => this.authService.currentUserSignal());
   public userRole = computed(() => this.currentUser()?.role);
 
@@ -72,6 +76,7 @@ export class ProfileEditorComponent implements OnInit {
   public newVideoUrl = '';
   public isUploadingVideo = false;
   public isUploadingImage = false;
+  public readonly mediaUrlBound = (value?: string | null): string => this.playerService.imageUrl(value);
   public mediaUrl(value?: string | null): string { return this.playerService.imageUrl(value); }
 
   public uploadAvatarFile(event: Event): void {
@@ -242,6 +247,7 @@ export class ProfileEditorComponent implements OnInit {
 
   public isLoading = false;
   public isSaving = false;
+  public loadError = '';
   public successMessage = '';
   public errorMessage = '';
 
@@ -255,6 +261,7 @@ export class ProfileEditorComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.title.setTitle('لوحة التحكم والملف الشخصي | الكورة لعبتنا');
     this.loadProfile();
   }
 
@@ -382,6 +389,7 @@ export class ProfileEditorComponent implements OnInit {
     if (!role) return;
 
     this.isLoading = true;
+    this.loadError = '';
 
     if (role === 'PLAYER') {
       const user = this.currentUser();
@@ -422,7 +430,10 @@ export class ProfileEditorComponent implements OnInit {
               };
             }
           },
-          error: () => { this.isLoading = false; }
+          error: () => {
+            this.isLoading = false;
+            this.loadError = 'تعذر تحميل بيانات الملف الشخصي. تحقق من الاتصال وحاول مرة أخرى.';
+          }
         });
       }
     } else if (role === 'ACADEMY') {
@@ -445,7 +456,10 @@ export class ProfileEditorComponent implements OnInit {
               };
             }
           },
-          error: () => { this.isLoading = false; }
+          error: () => {
+            this.isLoading = false;
+            this.loadError = 'تعذر تحميل بيانات الملف الشخصي. تحقق من الاتصال وحاول مرة أخرى.';
+          }
         });
       }
     } else if (role === 'CLUB') {
@@ -468,9 +482,22 @@ export class ProfileEditorComponent implements OnInit {
               };
             }
           },
-          error: () => { this.isLoading = false; }
+          error: () => {
+            this.isLoading = false;
+            this.loadError = 'تعذر تحميل بيانات الملف الشخصي. تحقق من الاتصال وحاول مرة أخرى.';
+          }
         });
       }
+    }
+  }
+
+  private isValidHttpUrl(value: string): boolean {
+    if (!value?.trim()) return true;
+    try {
+      const parsed = new URL(value.trim());
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    } catch {
+      return false;
     }
   }
 
@@ -483,6 +510,51 @@ export class ProfileEditorComponent implements OnInit {
     this.errorMessage = '';
 
     if (role === 'PLAYER') {
+    if (role === 'PLAYER') {
+      if (!this.playerForm.fullName.trim() || this.playerForm.fullName.trim().length < 3) {
+        this.isSaving = false;
+        this.errorMessage = 'الاسم بالكامل يجب ألا يقل عن 3 أحرف.';
+        return;
+      }
+      if (this.playerForm.age < 6 || this.playerForm.age > 60) {
+        this.isSaving = false;
+        this.errorMessage = 'العمر يجب أن يكون بين 6 و 60 سنة.';
+        return;
+      }
+      if (this.playerForm.heightCm && (this.playerForm.heightCm < 100 || this.playerForm.heightCm > 230)) {
+        this.isSaving = false;
+        this.errorMessage = 'الطول يجب أن يكون بين 100 و 230 سم.';
+        return;
+      }
+      if (this.playerForm.weightKg && (this.playerForm.weightKg < 30 || this.playerForm.weightKg > 200)) {
+        this.isSaving = false;
+        this.errorMessage = 'الوزن يجب أن يكون بين 30 و 200 كجم.';
+        return;
+      }
+    } else if (role === 'ACADEMY') {
+      if (!this.academyForm.academyName.trim() || this.academyForm.academyName.trim().length < 2) {
+        this.isSaving = false;
+        this.errorMessage = 'يرجى إدخال اسم الأكاديمية (حرفان على الأقل).';
+        return;
+      }
+      if (!this.isValidHttpUrl(this.academyForm.websiteOrPageUrl)) {
+        this.isSaving = false;
+        this.errorMessage = 'يرجى إدخال رابط موقع أو صفحة صحيح يبدأ بـ https://';
+        return;
+      }
+    } else if (role === 'CLUB') {
+      if (!this.clubForm.clubName.trim() || this.clubForm.clubName.trim().length < 2) {
+        this.isSaving = false;
+        this.errorMessage = 'يرجى إدخال اسم النادي (حرفان على الأقل).';
+        return;
+      }
+      if (!this.isValidHttpUrl(this.clubForm.websiteOrPageUrl)) {
+        this.isSaving = false;
+        this.errorMessage = 'يرجى إدخال رابط موقع أو صفحة صحيح يبدأ بـ https://';
+        return;
+      }
+    }
+
       this.playerService.updateMyProfile(this.playerForm).subscribe({
         next: (res) => {
           this.isSaving = false;

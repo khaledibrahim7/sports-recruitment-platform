@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -27,6 +28,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styles: [`:host { display:block; padding:3rem 1rem; } .auth-card { max-width:34rem; margin:auto; padding:2rem; }`]
 })
 export class VerifyAccountComponent implements OnInit {
+  private readonly title = inject(Title);
   message = 'جارٍ التحقق من الرابط...';
   finished = false;
   canResend = false;
@@ -36,6 +38,7 @@ export class VerifyAccountComponent implements OnInit {
   constructor(private route: ActivatedRoute, private router: Router, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.title.setTitle('تأكيد الحساب | الكورة لعبتنا');
     const token = this.route.snapshot.queryParamMap.get('token') ?? '';
     const kind = this.route.snapshot.queryParamMap.get('kind') === 'guardian' ? 'guardian' : 'email';
     this.router.navigate([], {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { AcademyProfile, ApiResponse } from '../models/models';
 
 @Injectable({
@@ -8,11 +8,24 @@ import { AcademyProfile, ApiResponse } from '../models/models';
 })
 export class AcademyService {
   private readonly API_URL = '/api/v1/academies';
+  private academiesCache$: Observable<ApiResponse<AcademyProfile[]>> | null = null;
 
   constructor(private http: HttpClient) {}
 
-  public getAcademies(): Observable<ApiResponse<AcademyProfile[]>> {
-    return this.http.get<ApiResponse<AcademyProfile[]>>(this.API_URL);
+  public getAcademies(forceRefresh = false): Observable<ApiResponse<AcademyProfile[]>> {
+    if (forceRefresh || !this.academiesCache$) {
+      this.academiesCache$ = this.http.get<ApiResponse<AcademyProfile[]>>(this.API_URL).pipe(
+        tap({
+          error: () => { this.academiesCache$ = null; }
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this.academiesCache$;
+  }
+
+  public invalidateCache(): void {
+    this.academiesCache$ = null;
   }
 
   public getAcademyById(id: number): Observable<ApiResponse<AcademyProfile>> {
@@ -23,7 +36,9 @@ export class AcademyService {
     return this.http.get<ApiResponse<AcademyProfile>>(`${this.API_URL}/me`);
   }
 
-  public updateMyProfile(payload: any): Observable<ApiResponse<AcademyProfile>> {
-    return this.http.put<ApiResponse<AcademyProfile>>(`${this.API_URL}/me`, payload);
+  public updateMyProfile(payload: Partial<AcademyProfile>): Observable<ApiResponse<AcademyProfile>> {
+    return this.http.put<ApiResponse<AcademyProfile>>(`${this.API_URL}/me`, payload).pipe(
+      tap(() => this.invalidateCache())
+    );
   }
 }

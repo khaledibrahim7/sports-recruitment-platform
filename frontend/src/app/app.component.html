@@ -1,11 +1,14 @@
 <app-navbar></app-navbar>
+<app-toast></app-toast>
 
 <main class="main-content">
   <router-outlet></router-outlet>
 </main>
 
-<!-- AI Scouting Agent - Floating Widget (visible on all pages) -->
-<app-ai-chat-widget></app-ai-chat-widget>
+<!-- AI Scouting Agent - Floating Widget (deferred until browser idle) -->
+@defer (on idle) {
+  <app-ai-chat-widget></app-ai-chat-widget>
+}
 
 <footer class="app-footer">
   <div class="container text-center py-4">

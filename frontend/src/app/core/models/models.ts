@@ -38,7 +38,7 @@ export interface AuthResponse {
   fullName: string;
   email: string;
   role: Role;
-  profile?: PlayerProfile | any;
+  profile?: PlayerProfile | AcademyProfile | ClubProfile;
 }
 
 export interface ApiResponse<T> {

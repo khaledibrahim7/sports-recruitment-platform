@@ -1,0 +1,118 @@
+<!-- Floating Toggle Button -->
+<button class="ai-fab" type="button" (click)="toggleChat()" [class.active]="isOpen()" [attr.aria-expanded]="isOpen()" aria-label="مساعد التكشيف الذكي">
+  @if (!isOpen()) {
+    @if (!avatarError()) {
+      <img src="images/kashif-avatar.png"
+           (error)="avatarError.set(true)"
+           class="fab-avatar" alt="كاشف" loading="lazy" decoding="async">
+    } @else {
+      <span class="fab-avatar-fallback"><i class="fa-solid fa-robot"></i></span>
+    }
+    <span class="fab-label">كاشف AI</span>
+  } @else {
+    <i class="fa-solid fa-xmark"></i>
+    <span class="fab-close-label">إغلاق</span>
+  }
+  @if (unread() > 0 && !isOpen()) {
+    <span class="unread-dot">{{ unread() }}</span>
+  }
+</button>
+
+<!-- Chat Panel -->
+@if (isOpen()) {
+  <div class="ai-chat-panel" [class.open]="isOpen()" role="dialog" aria-modal="false" aria-label="محادثة كاشف الذكي">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="agent-info">
+        <div class="agent-avatar">
+          @if (!avatarError()) {
+            <img src="images/kashif-avatar.png"
+                 (error)="avatarError.set(true)"
+                 class="avatar-img" alt="كاشف" loading="lazy" decoding="async">
+          } @else {
+            <i class="fa-solid fa-robot"></i>
+          }
+          <span class="status-dot"></span>
+        </div>
+        <div>
+          <div class="agent-name">كاشف</div>
+          <div class="agent-title">مساعد التكشيف الرياضي الذكي</div>
+        </div>
+      </div>
+      <!-- New Chat only -->
+      <button type="button" class="new-chat-btn" (click)="newChat()" title="محادثة جديدة" aria-label="بدء محادثة جديدة">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>جديد</span>
+      </button>
+    </div>
+
+    <!-- Suggestion chips (shown when no messages) -->
+    @if (messages().length === 0) {
+      <div class="suggestions-panel">
+        <div class="greeting">
+          <i class="fa-solid fa-hand-wave"></i>
+          مرحباً! أنا <strong>كاشف</strong> — مساعدك الذكي للتكشيف الرياضي.
+        </div>
+        <div class="chips-label">اقتراحات سريعة:</div>
+        <div class="chips">
+          @for (chip of suggestionChips; track $index) {
+            <button type="button" class="chip" (click)="sendChip(chip)">{{ chip }}</button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Messages -->
+    <div class="messages-area" #messagesArea aria-live="polite">
+      @for (msg of messages(); track $index) {
+        <div class="message" [class.user]="msg.role === 'user'" [class.agent]="msg.role === 'agent'">
+          @if (msg.role === 'agent') {
+            <div class="msg-avatar">
+              @if (!avatarError()) {
+                <img src="images/kashif-avatar.png"
+                     (error)="avatarError.set(true)"
+                     class="avatar-img-sm" alt="كاشف" loading="lazy" decoding="async">
+              } @else {
+                <i class="fa-solid fa-robot"></i>
+              }
+            </div>
+          }
+          <div class="msg-bubble">
+            @if (msg.loading) {
+              <div class="typing-dots" role="status" aria-label="جاري كتابة الرد">
+                <span></span><span></span><span></span>
+              </div>
+            } @else {
+              <span class="message-text">{{ msg.text }}</span>
+            }
+            <div class="msg-time">{{ msg.timestamp | date:'HH:mm' }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <input
+        type="text"
+        [(ngModel)]="userInput"
+        (keyup.enter)="sendMessage()"
+        placeholder="اكتب سؤالك هنا..."
+        aria-label="اكتب سؤالك لمساعد التكشيف الذكي"
+        [disabled]="isLoading()"
+        class="chat-input"
+        dir="rtl"
+      />
+      <button type="button" class="send-btn" (click)="sendMessage()" [disabled]="!userInput.trim() || isLoading()" aria-label="إرسال الرسالة">
+        @if (isLoading()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <i class="fa-solid fa-paper-plane"></i>
+          <span class="send-label">إرسال</span>
+        }
+      </button>
+    </div>
+
+  </div>
+}

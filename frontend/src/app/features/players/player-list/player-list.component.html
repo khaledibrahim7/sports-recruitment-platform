@@ -14,7 +14,7 @@
       <div class="filter-grid">
         <div class="form-group">
           <label><i class="fa-solid fa-magnifying-glass"></i> البحث بالاسم أو النبذة</label>
-          <input type="search" [(ngModel)]="searchQuery" placeholder="اسم اللاعب أو كلمات من نبذته..." class="form-control" />
+          <input type="search" [(ngModel)]="searchQuery" (ngModelChange)="onSearchQueryChange($event)" placeholder="اسم اللاعب أو كلمات من نبذته..." class="form-control" />
         </div>
 
         <div class="form-group">
@@ -175,6 +175,8 @@
                   class="btn-bookmark"
                   [class.active]="isBookmarked(player.id)"
                   [title]="isBookmarked(player.id) ? 'إزالة من قائمة المتابعة والتكشيف' : 'إضافة لقائمة المتابعة والتكشيف'"
+                  [attr.aria-label]="isBookmarked(player.id) ? 'إزالة من قائمة المتابعة والتكشيف' : 'إضافة لقائمة المتابعة والتكشيف'"
+                  [attr.aria-pressed]="isBookmarked(player.id)"
                 >
                   <i [class]="isBookmarked(player.id) ? 'fa-solid fa-bookmark text-gold' : 'fa-regular fa-bookmark'"></i>
                 </button>
@@ -186,7 +188,7 @@
                 [src]="mediaUrl(player.avatarUrl)"
                 (error)="$any($event.target).src='default-avatar.png'"
                 [alt]="player.fullName"
-                class="player-avatar-img"
+                class="player-avatar-img" loading="lazy" decoding="async"
               />
             </div>
 
@@ -271,16 +273,16 @@
 <!-- Radar Chart Modal -->
 @if (isRadarModalOpen && selectedRadarPlayer) {
   <div class="modal-backdrop" (click)="closeRadarModal()">
-    <div class="modal-container glass-card modal-radar-container" (click)="$event.stopPropagation()">
+    <div class="modal-container glass-card modal-radar-container" role="dialog" aria-modal="true" aria-labelledby="radar-modal-title" (click)="$event.stopPropagation()">
       <div class="modal-header d-flex justify-content-between align-items-center p-3 bg-dark border-bottom border-secondary">
         <div class="modal-title d-flex align-items-center gap-2">
           <i class="fa-solid fa-chart-pie text-gold fs-4"></i>
           <div>
-            <h3 class="m-0 text-white fs-5">التحليل الراداري للقدرات</h3>
+            <h3 class="m-0 text-white fs-5" id="radar-modal-title">التحليل الراداري للقدرات</h3>
             <span class="text-primary small font-semibold">اللاعب: <strong>{{ selectedRadarPlayer.fullName }}</strong></span>
           </div>
         </div>
-        <button type="button" (click)="closeRadarModal()" class="btn-close-modal" title="إغلاق النافذة">
+        <button type="button" (click)="closeRadarModal()" class="btn-close-modal" title="إغلاق النافذة" aria-label="إغلاق نافذة التحليل الراداري">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>

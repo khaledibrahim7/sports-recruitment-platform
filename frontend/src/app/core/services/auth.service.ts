@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
-import { ApiResponse, AuthResponse } from '../models/models';
+import { AcademyProfile, ApiResponse, AuthResponse, ClubProfile, PlayerProfile } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -16,10 +16,10 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  public register(payload: any): Observable<ApiResponse<void>> {
+  public register(payload: Record<string, unknown>): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/register`, {
       ...payload,
-      email: typeof payload?.email === 'string' ? payload.email.trim().toLowerCase() : payload?.email
+      email: typeof payload['email'] === 'string' ? payload['email'].trim().toLowerCase() : payload['email']
     });
   }
 
@@ -32,7 +32,7 @@ export class AuthService {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/resend-verification`, { email: email.trim().toLowerCase() });
   }
 
-  public login(payload: any): Observable<ApiResponse<AuthResponse>> {
+  public login(payload: { email: string; password: string }): Observable<ApiResponse<AuthResponse>> {
     const normalizedPayload = {
       ...payload,
       email: typeof payload?.email === 'string' ? payload.email.trim().toLowerCase() : payload?.email
@@ -85,7 +85,7 @@ export class AuthService {
     return request;
   }
 
-  public updateProfileInSession(profileData: any): void {
+  public updateProfileInSession(profileData: PlayerProfile | AcademyProfile | ClubProfile): void {
     const current = this.currentUserSignal();
     if (current) {
       const updated = { ...current, profile: profileData };
@@ -96,5 +96,4 @@ export class AuthService {
   private setSession(authData: AuthResponse): void {
     this.currentUserSignal.set(authData);
   }
-
 }
